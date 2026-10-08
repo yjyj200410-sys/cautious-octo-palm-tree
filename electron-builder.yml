@@ -1,0 +1,164 @@
+appId: com.sandakannipunajith.lumina
+productName: Volo
+executableName: Volo
+copyright: Copyright © 2024 Sandakan Nipunajith
+icon: ./build/icon.ico
+artifactName: '${productName} v${version}-${os}-${arch}.${ext}'
+
+extraMetadata:
+  description: Volo — 自由跃动的音乐播放器
+
+directories:
+  buildResources: build
+
+files:
+  - 'out/**'
+  - 'resources/**'
+  - 'package.json'
+  - 'LICENSE.txt'
+  - 'open_source_licenses.txt'
+  - '!.codex-artifacts/**'
+  - '!resources/stemgen/**'
+  - '!resources/coloros-mss/**'
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!**/resources/other/*'
+  - '!**/resources/installer_assets/*'
+  - '!**/resources/other/*'
+
+asarUnpack:
+  - package.json
+  # Native Node workers need the worker chunks and runtime package metadata on disk.
+  - out/main/**
+  - node_modules/onnxruntime-node/**
+  - node_modules/onnxruntime-common/**
+  - node_modules/koffi/**
+  - node_modules/@koromix/**
+  - resources/**
+  - node_modules/sharp/**/*
+  - node_modules/@img/**/*
+  - node_modules/ffmpeg-static/**/*
+
+extraResources:
+  - from: resources/coloros-mss
+    to: coloros-mss
+  - from: out/builtin-wallpapers
+    to: builtin-wallpapers
+  # Drizzle migrations — must be complete (sql + meta/_journal.json)
+  - from: resources/drizzle
+    to: drizzle
+
+fileAssociations:
+  - ext: mp3
+    icon: ./build/installer_assets/file_associated_icons/mp3.ico
+    mimeType: audio/mpeg
+    role: Editor
+  - ext: wav
+    icon: ./build/installer_assets/file_associated_icons/wav.ico
+    mimeType: audio/wav
+    role: Editor
+  - ext: ogg
+    icon: ./build/installer_assets/file_associated_icons/ogg.ico
+    mimeType: audio/ogg
+    role: Editor
+  - ext: aac
+    icon: ./build/installer_assets/file_associated_icons/aac.ico
+    mimeType: audio/aac
+    role: Editor
+  - ext: m4r
+    icon: ./build/installer_assets/file_associated_icons/m4r.ico
+    mimeType: audio/x-m4r
+    role: Editor
+  - ext: flac
+    icon: ./build/installer_assets/file_associated_icons/flac.ico
+    mimeType: audio/flac
+    role: Editor
+  - ext: opus
+    icon: ./build/installer_assets/file_associated_icons/opus.ico
+    mimeType: audio/ogg
+    role: Editor
+  - ext: m4a
+    icon: ./build/installer_assets/file_associated_icons/m4a.ico
+    mimeType: audio/mp4
+    role: Editor
+
+win:
+  # Platform files replace the global filters; retain the global exclusions here.
+  files:
+    - 'out/**'
+    - 'resources/**'
+    - 'package.json'
+    - 'LICENSE.txt'
+    - 'open_source_licenses.txt'
+    - '!.codex-artifacts/**'
+    - '!resources/stemgen/**'
+    - '!resources/coloros-mss/**'
+    - '!**/.vscode/*'
+    - '!src/*'
+    - '!electron.vite.config.{js,ts,mjs,cjs}'
+    - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
+    - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+    - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+    - '!**/resources/other/*'
+    - '!**/resources/installer_assets/*'
+    - '!node_modules/onnxruntime-node/bin/napi-v6/darwin/**'
+    - '!node_modules/onnxruntime-node/bin/napi-v6/linux/**'
+    - '!node_modules/onnxruntime-node/bin/napi-v6/win32/arm64/**'
+  executableName: Volo
+  target:
+    - target: nsis
+      arch:
+        - x64
+
+nsis:
+  shortcutName: '${productName}'
+  allowElevation: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  installerIcon: ./build/icon.ico
+  installerSidebar: ./build/installer_assets/sidebar.bmp
+  license: ./LICENSE.txt
+  oneClick: false
+  perMachine: false
+  uninstallerIcon: ./build/icon.ico
+  uninstallerSidebar: ./build/installer_assets/sidebar.bmp
+
+mac:
+  category: public.app-category.music
+  darkModeSupport: true
+  entitlementsInherit: build/entitlements.mac.plist
+  gatekeeperAssess: false
+  hardenedRuntime: true
+  icon: ./build/icon.icns
+  extendInfo:
+    - NSCameraUsageDescription: "Application requests access to the device's camera."
+    - NSMicrophoneUsageDescription: "Application requests access to the device's microphone."
+    - NSDocumentsFolderUsageDescription: "Application requests access to the user's Documents folder."
+    - NSDownloadsFolderUsageDescription: "Application requests access to the user's Downloads folder."
+  notarize: false
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+
+linux:
+  target:
+    - AppImage
+    - snap
+    - deb
+    - rpm
+    # - dir
+  category: AudioVideo
+  synopsis: 'An elegant music player built using Electron and React. Inspired by Oto Music for Android by Piyush Mamidwar.'
+
+npmRebuild: false
+
+protocols:
+  name: lumina-protocol
+  schemes:
+    - lumina
