@@ -1,0 +1,149 @@
+* { box-sizing: border-box; }
+
+.mini-player {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 0;
+  background: #0f1115;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: inset 0 1px rgb(255 255 255 / 10%);
+  color: #f7f7f8;
+  font-family: system-ui, 'Microsoft YaHei UI', sans-serif;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.mini-player__drag {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 7px;
+  z-index: 1;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+.mini-player__body {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: calc(100% - 6px);
+  padding: 7px 10px 5px 11px;
+}
+
+.mini-player__identity {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 10px;
+  min-width: 0;
+  height: 100%;
+  cursor: default;
+}
+
+.mini-player__cover {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  border-radius: 9px;
+  background: rgb(255 255 255 / 9%);
+  color: rgb(255 255 255 / 54%);
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.mini-player__cover img { width: 100%; height: 100%; object-fit: cover; }
+.mini-player__cover .material-symbols-rounded { font-size: 24px; }
+.mini-player__copy { min-width: 0; flex: 1; }
+.mini-player__title,
+.mini-player__artist,
+.mini-player__lyric { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini-player__title { font-size: 13px; line-height: 18px; font-weight: 650; letter-spacing: -.01em; }
+.mini-player__artist { color: rgb(255 255 255 / 60%); font-size: 11px; line-height: 16px; }
+.mini-player__lyric { color: rgb(255 255 255 / 82%); font-size: 11px; line-height: 16px; }
+
+.mini-player__controls {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  flex: none;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
+.mini-player__button {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: rgb(255 255 255 / 72%);
+  cursor: pointer;
+  transition: color 150ms ease, transform 150ms ease;
+}
+.mini-player__button .material-symbols-rounded { font-size: 21px; line-height: 1; font-variation-settings: 'FILL' 1; }
+.mini-player__button--primary { width: 35px; color: rgb(255 255 255 / 94%); }
+.mini-player__button--primary .material-symbols-rounded { font-size: 26px; }
+.mini-player__button:hover { color: #fff; transform: scale(1.09); }
+.mini-player__button:active { transform: scale(.91); }
+.mini-player__button:focus-visible,
+.mini-player__cover:focus-visible,
+.mini-player__seek input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.mini-player__seek {
+  position: absolute;
+  inset: auto 9px 0;
+  height: 8px;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+.mini-player__seek input {
+  display: block;
+  width: 100%;
+  height: 8px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.mini-player__seek input::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(to right, rgb(255 255 255 / 92%) var(--mini-progress), rgb(255 255 255 / 23%) var(--mini-progress));
+  transition: height 150ms ease;
+}
+.mini-player__seek input:hover::-webkit-slider-runnable-track,
+.mini-player__seek input:focus-visible::-webkit-slider-runnable-track { height: 4px; }
+.mini-player__seek input::-webkit-slider-thumb {
+  width: 7px;
+  height: 7px;
+  margin-top: -2.5px;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 50%;
+  background: transparent;
+  opacity: 0;
+}
+.mini-player__seek input:disabled { cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mini-player__button,
+  .mini-player__seek input::-webkit-slider-runnable-track { transition: none; }
+  .mini-player__button:hover,
+  .mini-player__button:active { transform: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .mini-player { background: #0f1115; -webkit-backdrop-filter: none; backdrop-filter: none; }
+}

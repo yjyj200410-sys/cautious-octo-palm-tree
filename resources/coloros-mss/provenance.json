@@ -1,0 +1,11 @@
+{
+  "source": "ADB-connected OnePlus PKR110, ColorOS V16.1.0, 2026-10-02",
+  "originalPath": "/odm/etc/oplusmss/double.tflite",
+  "originalSha256": "5c26862181c29cc24d0f39c247910195eaf1fa685451b88748c497dba7b664e5",
+  "onnxSha256": "c4e52f3d5e2c7d46d72ffffe16ea5a126c6bb8d034fd5f5e2fd0f04c2e1b3ff7",
+  "onnxBytes": 4936670,
+  "conversion": "FLOAT32 weights unchanged; ONNX layout adaptation; 12 sequential music-block comparisons passed",
+  "use": "Local trial of the user device model; vendor model redistribution license has not been established.",
+  "vocalStem": 0,
+  "vocalEvidence": "Native gain vector logs element 0 as vocal, element 3 as accompaniment; isolated SAPI speech overwhelmingly retained in stem 0."
+}

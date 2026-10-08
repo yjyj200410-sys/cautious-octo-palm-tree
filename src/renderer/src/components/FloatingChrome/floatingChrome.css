@@ -1,0 +1,429 @@
+/* The canvas is the workspace; chrome occupies only the individual islands. */
+.App.floating-app {
+  display: block;
+  --app-playerbar-height: 0px;
+}
+.floating-app .player-workspace-transition {
+  height: 100%;
+}
+.floating-app:not(.home-active) .body {
+  padding-bottom: 140px;
+}
+.floating-app.home-active .app-top-spacer {
+  display: none;
+}
+.floating-app.home-active
+  :is(.home-workspace-shell, .home-library-grid, .home-library-columns, .home-detail-layout) {
+  height: 100% !important;
+  width: 100%;
+}
+.floating-app :is(.home-library-columns, .home-detail-layout) {
+  display: block;
+  position: relative;
+}
+.floating-app :is(.library-content-surface, .home-detail-songs) {
+  height: 100%;
+  width: 100%;
+}
+.floating-app .home-feed-inner {
+  padding-top: 86px;
+  padding-bottom: 160px;
+}
+.floating-app .home-workspace-shell {
+  background: transparent !important;
+}
+.floating-app .library-content-layout[data-surface='cd'] .library-song-list-region {
+  position: absolute;
+  inset: 0;
+}
+.floating-app .library-content-layout[data-surface='list'] .library-song-list-region {
+  padding-top: 132px;
+  padding-bottom: 140px;
+}
+.floating-app .library-floating-tools {
+  position: absolute;
+  top: 76px;
+  left: 16px;
+  z-index: 25;
+  max-width: calc(100% - 96px);
+}
+.floating-app .library-floating-tools[data-open='true'] .floating-panel-body {
+  width: min(680px, calc(100vw - 90px));
+  padding: 8px;
+}
+.floating-app .library-list-header {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.floating-app .home-detail-layout .library-floating-tools {
+  left: 98px;
+  max-width: calc(100% - 178px);
+}
+.floating-app .home-back-button {
+  top: 76px;
+  left: 16px;
+  z-index: 26;
+  border-radius: 24px;
+  height: 44px;
+}
+.floating-app .home-detail-aside {
+  border: 0;
+  padding: 12px 16px 20px;
+  max-height: 100%;
+}
+
+.floating-panel {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 4px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 28px;
+  color: #fff;
+  background: rgb(21 24 29 / 82%);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 8%),
+    0 6px 24px rgb(0 0 0 / 16%);
+  backdrop-filter: blur(18px) saturate(130%);
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
+}
+.floating-panel-body {
+  min-width: 0;
+}
+.floating-panel-body[hidden] {
+  display: none !important;
+}
+.floating-panel[data-open='true'] .floating-panel-body {
+  animation: floating-island-in 160ms ease-out;
+}
+.floating-panel-toggle {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex: none;
+  color: #fff;
+  cursor: pointer;
+}
+.floating-panel-toggle:hover {
+  background: rgb(255 255 255 / 10%);
+}
+.floating-panel-toggle:active {
+  scale: 0.94;
+}
+.floating-panel-toggle .material-icons-round-outlined {
+  font-size: 21px;
+}
+.floating-panel-label {
+  display: none;
+}
+.floating-panel :is(button, input):focus-visible,
+.floating-focus-toggle:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.floating-sidebar {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  z-index: 30;
+  transform: translateY(-50%);
+}
+.floating-sidebar[data-open='true'] {
+  width: 216px;
+  height: min(560px, calc(100% - 164px));
+  flex-direction: column-reverse;
+  align-items: stretch;
+  border-radius: 22px;
+  padding: 5px;
+}
+.floating-sidebar[data-open='true'] .floating-panel-toggle {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  padding-inline: 12px;
+  border-radius: 16px;
+}
+.floating-app[data-library-open='true'] .floating-sidebar[data-open='true'] {
+  top: 190px;
+  bottom: 150px;
+  height: auto;
+  max-height: 560px;
+  transform: none;
+}
+.floating-sidebar[data-open='true'] .floating-panel-label {
+  display: block;
+  font-size: 12px;
+}
+.floating-sidebar[data-open='true'] .floating-panel-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.floating-sidebar .ipod-library-rail {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.floating-sidebar .cd-rail-card {
+  padding: 10px 12px 12px;
+}
+.floating-app .cd-canvas {
+  background: transparent;
+}
+.floating-app :is(.cd-minimap, .cd-canvas-note) {
+  display: none;
+}
+.floating-app .canvas-floating-tools {
+  position: absolute;
+  right: 16px;
+  bottom: 128px;
+  z-index: 24;
+}
+.floating-app .cd-canvas-controls {
+  position: static;
+  transform: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  max-width: none;
+}
+
+.floating-app .app-top-bar {
+  pointer-events: none;
+  -webkit-app-region: no-drag !important;
+}
+.floating-app .app-top-bar > :is(.app-top-bar-left, .app-top-bar-navigation, .app-top-bar-actions) {
+  pointer-events: auto;
+}
+.floating-app .app-top-bar > :is(.app-top-bar-left, .app-top-bar-actions) {
+  pointer-events: none;
+}
+.floating-app .app-top-bar > :is(.app-top-bar-left, .app-top-bar-actions) > * {
+  pointer-events: auto;
+}
+.floating-app .window-controls-container {
+  height: 44px;
+  padding: 0 3px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 28px;
+  background: rgb(21 24 29 / 82%);
+  backdrop-filter: blur(18px);
+}
+.floating-app .lumina-wordmark {
+  -webkit-app-region: drag;
+}
+.floating-window-drag-handle {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 6px;
+  z-index: 50;
+}
+.floating-focus-toggle {
+  position: fixed;
+  top: 76px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(255 255 255 / 16%);
+  border-radius: 50%;
+  color: #fff;
+  background: rgb(21 24 29 / 82%);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 4px 18px rgb(0 0 0 / 16%);
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
+}
+.floating-focus-toggle .material-icons-round-outlined {
+  font-size: 22px;
+}
+.floating-app[data-focus-mode='true'] .floating-focus-toggle {
+  top: 16px;
+}
+.floating-app[data-focus-mode='true']
+  :is(
+    .floating-panel,
+    .home-back-button,
+    .app-top-bar-left,
+    .app-top-bar-navigation,
+    .app-top-bar-actions
+  ) {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.floating-app .player-controls-transition {
+  position: absolute;
+  inset: auto 0 0;
+  height: 126px;
+  pointer-events: none;
+}
+.floating-player {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+.floating-player .floating-panel {
+  position: absolute;
+}
+.floating-progress {
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.floating-progress[data-open='true'] .floating-panel-body {
+  width: min(380px, calc(100vw - 176px));
+  padding: 0 10px;
+}
+.floating-playback {
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.floating-player .song-controls-and-seekbar-container {
+  padding: 3px 28px 3px 12px;
+}
+.floating-playback .desktop-player-primary-controls {
+  padding: 0;
+}
+.floating-playback .desktop-player-primary-controls .like-btn {
+  right: auto;
+  left: calc(100% + 4px);
+}
+.floating-song {
+  bottom: 16px;
+  left: 16px;
+}
+.floating-song[data-open='true'] .floating-panel-body {
+  width: 230px;
+  padding: 4px 8px;
+}
+.floating-player .current-playing-song-info-container {
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+}
+.floating-player .song-cover-container {
+  height: 40px;
+  width: 40px;
+}
+.floating-player .song-info-container {
+  display: flex !important;
+}
+.floating-tools {
+  bottom: 16px;
+  right: 16px;
+}
+.floating-tools .other-controls-container {
+  padding: 4px 7px;
+}
+.floating-tools .other-controls-container > .button {
+  width: 32px;
+  height: 34px;
+}
+.floating-app .queue-popup-surface[aria-label='播放队列'] {
+  bottom: 132px;
+  right: 16px;
+  max-width: calc(100vw - 32px);
+}
+.floating-seek-content {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  height: 34px;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.floating-seek-content > span {
+  opacity: 0.75;
+  flex: none;
+}
+.floating-seek-content .seek-bar {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+.floating-seek-content .seek-bar-slider {
+  height: 30px;
+}
+.floating-seek-content .seek-bar-slider::before {
+  border-radius: 4px;
+}
+html[data-immersive]
+  .floating-app
+  .player-controls-transition:has(.floating-panel-toggle[aria-expanded='true']) {
+  pointer-events: none;
+}
+body.volo-floating-shell .immersive-entry-zone {
+  bottom: 176px;
+}
+@keyframes floating-island-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 1100px) {
+  .floating-app[data-tools-open='true'] .floating-sidebar[data-open='true'] {
+    top: 190px;
+    bottom: 204px;
+    height: auto;
+    max-height: 560px;
+    transform: none;
+  }
+  .floating-app[data-sidebar-open='true'] .floating-song[data-open='true'] {
+    left: 248px;
+  }
+  .floating-app[data-tools-open='true'] .canvas-floating-tools {
+    bottom: 252px;
+  }
+  .floating-tools[data-open='true'] {
+    bottom: 140px;
+  }
+  .floating-song[data-open='true'] {
+    bottom: 194px;
+  }
+}
+@media (max-width: 700px) {
+  .floating-app[data-sidebar-open='true'] .floating-song[data-open='true'] {
+    left: 228px;
+  }
+  .floating-sidebar[data-open='true'] {
+    width: 196px;
+  }
+  .floating-player .desktop-player-primary-controls {
+    grid-template-columns: repeat(2, 30px) 40px repeat(2, 30px);
+  }
+  .floating-playback {
+    bottom: 68px;
+  }
+  .floating-app .canvas-floating-tools[data-open='true'] {
+    bottom: 252px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-panel[data-open='true'] .floating-panel-body {
+    animation: none;
+  }
+  .floating-panel-toggle:active {
+    scale: 1;
+  }
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  :is(.floating-panel, .floating-focus-toggle) {
+    background: #181b20;
+    backdrop-filter: none;
+  }
+}

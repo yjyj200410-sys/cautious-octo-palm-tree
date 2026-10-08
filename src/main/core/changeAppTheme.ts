@@ -1,0 +1,30 @@
+import { getUserSettings, saveUserSettings } from '@main/db/queries/settings';
+import { nativeTheme } from 'electron';
+
+import logger from '../logger';
+import { dataUpdateEvent, getBackgroundColor, mainWindow } from '../main';
+
+const changeAppTheme = async (theme?: AppTheme) => {
+  const { isDarkMode } = await getUserSettings();
+  logger.debug(`Theme update requested`, { theme });
+
+  const updatedIsDarkMode =
+    theme === undefined
+      ? !isDarkMode
+      : theme === 'light'
+        ? false
+        : theme === 'dark'
+          ? true
+          : nativeTheme.shouldUseDarkColors;
+  const updatedUseSystemTheme = theme === 'system';
+
+  if (mainWindow?.webContents)
+    mainWindow.webContents.send('app/systemThemeChange', updatedIsDarkMode, updatedUseSystemTheme);
+
+  await saveUserSettings({ isDarkMode: updatedIsDarkMode, useSystemTheme: updatedUseSystemTheme });
+
+  // DWM material manages background — keep it transparent
+  dataUpdateEvent('userData/theme');
+};
+
+export default changeAppTheme;

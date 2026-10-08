@@ -1,0 +1,304 @@
+/* Glass colors follow the real app theme, including portals and wallpaper layouts. */
+:root {
+  --glass-background: 246 248 252;
+  --glass-foreground: 27 31 39;
+  --glass-border: 34 42 54;
+  --glass-border-alpha: .13;
+  --glass-highlight-alpha: .4;
+  --glass-shadow-alpha: .13;
+  --glass-opacity: .42;
+  --glass-panel-opacity: .56;
+}
+body.dark {
+  --glass-background: 20 23 30;
+  --glass-foreground: 244 246 250;
+  --glass-border: 255 255 255;
+  --glass-border-alpha: .16;
+  --glass-highlight-alpha: .12;
+  --glass-shadow-alpha: .3;
+  --glass-opacity: .64;
+  --glass-panel-opacity: .86;
+}
+body :is([class*="backdrop-blur-"]:not(.App):not(.main-app):not(.glass-backdrop), .settings-drawer-shell, .management-dialog-panel, .ncm-login-dialog, .ncm-logout-dialog, .ncm-account-menu, .global-search-field, .library-filter-panel, .queue-popup-surface, .fullscreen-layout-switch, .immersive-entry-button) {
+  background: rgb(var(--glass-background) / var(--glass-opacity)) !important;
+  color: rgb(var(--glass-foreground)) !important;
+  border-color: rgb(var(--glass-border) / var(--glass-border-alpha)) !important;
+  --tw-ring-color: rgb(var(--glass-border) / var(--glass-border-alpha)) !important;
+  box-shadow: inset 0 1px rgb(255 255 255 / var(--glass-highlight-alpha)), 0 12px 36px rgb(0 0 0 / var(--glass-shadow-alpha)) !important;
+  text-shadow: none !important;
+}
+body :is(.settings-drawer-shell, .management-dialog-panel, .ncm-login-dialog, .ncm-logout-dialog, .ncm-account-menu, .dialog-menu, .library-filter-panel) {
+  --glass-opacity: var(--glass-panel-opacity);
+}
+body .desktop-player-bar {
+  color: rgb(var(--glass-foreground));
+  border-color: rgb(var(--glass-border) / var(--glass-border-alpha));
+  box-shadow: inset 0 1px rgb(255 255 255 / var(--glass-highlight-alpha)), 0 -12px 36px rgb(0 0 0 / var(--glass-shadow-alpha));
+}
+body .desktop-player-bar::before {
+  background: rgb(var(--glass-background) / var(--glass-opacity)) !important;
+}
+body .fullscreen-layout-switch__highlight-surface {
+  background: rgb(var(--glass-foreground) / .12);
+  border-color: rgb(var(--glass-border) / var(--glass-border-alpha));
+  box-shadow: inset 0 1px rgb(255 255 255 / var(--glass-highlight-alpha));
+}
+body .fullscreen-layout-switch__option {
+  color: rgb(var(--glass-foreground) / .56);
+}
+body .fullscreen-layout-switch__option[aria-checked='true'],
+body .fullscreen-layout-switch__option:hover {
+  color: rgb(var(--glass-foreground));
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  body :is([class*="backdrop-blur-"]:not(.App):not(.main-app):not(.glass-backdrop), .settings-drawer-shell, .management-dialog-panel, .ncm-login-dialog, .ncm-logout-dialog, .ncm-account-menu, .global-search-field, .library-filter-panel, .queue-popup-surface, .fullscreen-layout-switch, .immersive-entry-button),
+  body .desktop-player-bar::before {
+    background: rgb(var(--glass-background)) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+body :is(:is([class*="backdrop-blur-"]:not(.App):not(.main-app):not(.glass-backdrop), .settings-drawer-shell, .management-dialog-panel, .ncm-login-dialog, .ncm-logout-dialog, .ncm-account-menu, .global-search-field, .library-filter-panel, .queue-popup-surface, .fullscreen-layout-switch, .immersive-entry-button), .desktop-player-bar) {
+  & [class~='bg-black'] { background-color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='border-white/10'] { border-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='border-white/12'] { border-color: rgb(var(--glass-foreground) / 0.12) !important; }
+  & [class~='border-white/14'] { border-color: rgb(var(--glass-foreground) / 0.14) !important; }
+  & [class~='border-white/18'] { border-color: rgb(var(--glass-foreground) / 0.18) !important; }
+  & [class~='border-white/20'] { border-color: rgb(var(--glass-foreground) / 0.2) !important; }
+  & [class~='border-white/25'] { border-color: rgb(var(--glass-foreground) / 0.25) !important; }
+  & [class~='border-white/35'] { border-color: rgb(var(--glass-foreground) / 0.35) !important; }
+  & [class~='border-white/70'] { border-color: rgb(var(--glass-foreground) / 0.7) !important; }
+  & [class~='border-white/8'] { border-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='border-white/80'] { border-color: rgb(var(--glass-foreground) / 0.8) !important; }
+  & [class~='text-white/85'] { color: rgb(var(--glass-foreground) / 0.85) !important; }
+  & [class~='ring-white/10'] { --tw-ring-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='ring-white/12'] { --tw-ring-color: rgb(var(--glass-foreground) / 0.12) !important; }
+  & [class~='ring-white/14'] { --tw-ring-color: rgb(var(--glass-foreground) / 0.14) !important; }
+  & [class~='ring-white/15'] { --tw-ring-color: rgb(var(--glass-foreground) / 0.15) !important; }
+  & [class~='ring-white/70'] { --tw-ring-color: rgb(var(--glass-foreground) / 0.7) !important; }
+  & [class~='text-black'] { color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='text-white/80'] { color: rgb(var(--glass-foreground) / 0.8) !important; }
+  & [class~='text-white/75'] { color: rgb(var(--glass-foreground) / 0.75) !important; }
+  & [class~='text-white/72'] { color: rgb(var(--glass-foreground) / 0.72) !important; }
+  & [class~='text-white/70'] { color: rgb(var(--glass-foreground) / 0.7) !important; }
+  & [class~='text-white/68'] { color: rgb(var(--glass-foreground) / 0.68) !important; }
+  & [class~='text-white/60'] { color: rgb(var(--glass-foreground) / 0.6) !important; }
+  & [class~='border-black/8'] { border-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='text-white/55'] { color: rgb(var(--glass-foreground) / 0.55) !important; }
+  & [class~='text-white/45'] { color: rgb(var(--glass-foreground) / 0.45) !important; }
+  & [class~='text-white/40'] { color: rgb(var(--glass-foreground) / 0.4) !important; }
+  & [class~='text-white/35'] { color: rgb(var(--glass-foreground) / 0.35) !important; }
+  & [class~='text-white/30'] { color: rgb(var(--glass-foreground) / 0.3) !important; }
+  & [class~='text-white/20'] { color: rgb(var(--glass-foreground) / 0.2) !important; }
+  & [class~='text-white'] { color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='text-white/50'] { color: rgb(var(--glass-foreground) / 0.5) !important; }
+  & [class~='border-black/5'] { border-color: rgb(var(--glass-foreground) / 0.05) !important; }
+  & [class~='text-white/90'] { color: rgb(var(--glass-foreground) / 0.9) !important; }
+  & [class~='border-black/12'] { border-color: rgb(var(--glass-foreground) / 0.12) !important; }
+  & [class~='border-black/15'] { border-color: rgb(var(--glass-foreground) / 0.15) !important; }
+  & [class~='bg-white/18'] { background-color: rgb(var(--glass-foreground) / 0.18) !important; }
+  & [class~='bg-white/12'] { background-color: rgb(var(--glass-foreground) / 0.12) !important; }
+  & [class~='bg-white/10'] { background-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='bg-white'] { background-color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='bg-black/8'] { background-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='bg-black/60'] { background-color: rgb(var(--glass-foreground) / 0.6) !important; }
+  & [class~='bg-black/6'] { background-color: rgb(var(--glass-foreground) / 0.06) !important; }
+  & [class~='bg-white/20'] { background-color: rgb(var(--glass-foreground) / 0.2) !important; }
+  & [class~='bg-black/5'] { background-color: rgb(var(--glass-foreground) / 0.05) !important; }
+  & [class~='bg-black/40'] { background-color: rgb(var(--glass-foreground) / 0.4) !important; }
+  & [class~='bg-black/4'] { background-color: rgb(var(--glass-foreground) / 0.04) !important; }
+  & [class~='bg-black/32'] { background-color: rgb(var(--glass-foreground) / 0.32) !important; }
+  & [class~='bg-black/30'] { background-color: rgb(var(--glass-foreground) / 0.3) !important; }
+  & [class~='bg-black/3'] { background-color: rgb(var(--glass-foreground) / 0.03) !important; }
+  & [class~='bg-black/50'] { background-color: rgb(var(--glass-foreground) / 0.5) !important; }
+  & [class~='bg-black/24'] { background-color: rgb(var(--glass-foreground) / 0.24) !important; }
+  & [class~='border-black/10'] { border-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='bg-black/25'] { background-color: rgb(var(--glass-foreground) / 0.25) !important; }
+  & [class~='bg-white/75'] { background-color: rgb(var(--glass-foreground) / 0.75) !important; }
+  & [class~='bg-white/70'] { background-color: rgb(var(--glass-foreground) / 0.7) !important; }
+  & [class~='bg-white/7'] { background-color: rgb(var(--glass-foreground) / 0.07) !important; }
+  & [class~='bg-white/65'] { background-color: rgb(var(--glass-foreground) / 0.65) !important; }
+  & [class~='bg-white/60'] { background-color: rgb(var(--glass-foreground) / 0.6) !important; }
+  & [class~='bg-white/8'] { background-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='bg-white/55'] { background-color: rgb(var(--glass-foreground) / 0.55) !important; }
+  & [class~='bg-white/5'] { background-color: rgb(var(--glass-foreground) / 0.05) !important; }
+  & [class~='bg-black/0'] { background-color: rgb(var(--glass-foreground) / 0) !important; }
+  & [class~='bg-black/10'] { background-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='bg-black/15'] { background-color: rgb(var(--glass-foreground) / 0.15) !important; }
+  & [class~='bg-black/22'] { background-color: rgb(var(--glass-foreground) / 0.22) !important; }
+  & [class~='bg-white/6'] { background-color: rgb(var(--glass-foreground) / 0.06) !important; }
+  & [class~='hover:bg-white/14']:hover { background-color: rgb(var(--glass-foreground) / 0.14) !important; }
+  & [class~='hover:bg-white/20']:hover { background-color: rgb(var(--glass-foreground) / 0.2) !important; }
+  & [class~='hover:bg-white/30']:hover { background-color: rgb(var(--glass-foreground) / 0.3) !important; }
+  & [class~='hover:bg-white/8']:hover { background-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='hover:border-white/30']:hover { border-color: rgb(var(--glass-foreground) / 0.3) !important; }
+  & [class~='hover:text-white/50']:hover { color: rgb(var(--glass-foreground) / 0.5) !important; }
+  & [class~='hover:text-white']:hover { color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='hover:text-white/70']:hover { color: rgb(var(--glass-foreground) / 0.7) !important; }
+  & [class~='hover:text-white/80']:hover { color: rgb(var(--glass-foreground) / 0.8) !important; }
+  & [class~='hover:text-white/90']:hover { color: rgb(var(--glass-foreground) / 0.9) !important; }
+  & [class~='placeholder:text-white/35']::placeholder { color: rgb(var(--glass-foreground) / 0.35) !important; }
+  & [class~='hover:bg-white/13']:hover { background-color: rgb(var(--glass-foreground) / 0.13) !important; }
+  & [class~='hover:border-white/40']:hover { border-color: rgb(var(--glass-foreground) / 0.4) !important; }
+  & [class~='hover:bg-white/10']:hover { background-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='hover:bg-black/4']:hover { background-color: rgb(var(--glass-foreground) / 0.04) !important; }
+  & [class~='hover:bg-black/7']:hover { background-color: rgb(var(--glass-foreground) / 0.07) !important; }
+  & [class~='dark:bg-white/9'] { background-color: rgb(var(--glass-foreground) / 0.09) !important; }
+  & [class~='dark:border-white/10'] { border-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='dark:border-white/15'] { border-color: rgb(var(--glass-foreground) / 0.15) !important; }
+  & [class~='dark:border-white/5'] { border-color: rgb(var(--glass-foreground) / 0.05) !important; }
+  & [class~='dark:border-white/8'] { border-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='dark:bg-white/6'] { background-color: rgb(var(--glass-foreground) / 0.06) !important; }
+  & [class~='dark:bg-white/5'] { background-color: rgb(var(--glass-foreground) / 0.05) !important; }
+  & [class~='dark:bg-white/4'] { background-color: rgb(var(--glass-foreground) / 0.04) !important; }
+  & [class~='hover:bg-black/8']:hover { background-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='dark:bg-white/18'] { background-color: rgb(var(--glass-foreground) / 0.18) !important; }
+  & [class~='dark:bg-white/10'] { background-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='dark:bg-white'] { background-color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='dark:text-black'] { color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='dark:text-white'] { color: rgb(var(--glass-foreground) / 1) !important; }
+  & [class~='dark:text-white/80'] { color: rgb(var(--glass-foreground) / 0.8) !important; }
+  & [class~='focus-visible:bg-white/10']:focus-visible { background-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='focus-visible:ring-white/60']:focus-visible { --tw-ring-color: rgb(var(--glass-foreground) / 0.6) !important; }
+  & [class~='focus:border-black/35']:focus { border-color: rgb(var(--glass-foreground) / 0.35) !important; }
+  & [class~='focus:border-white/30']:focus { border-color: rgb(var(--glass-foreground) / 0.3) !important; }
+  & [class~='focus:border-white/50']:focus { border-color: rgb(var(--glass-foreground) / 0.5) !important; }
+  & [class~='hover:bg-black/36']:hover { background-color: rgb(var(--glass-foreground) / 0.36) !important; }
+  & [class~='hover:bg-black/40']:hover { background-color: rgb(var(--glass-foreground) / 0.4) !important; }
+  & [class~='hover:bg-black/42']:hover { background-color: rgb(var(--glass-foreground) / 0.42) !important; }
+  & [class~='hover:bg-black/5']:hover { background-color: rgb(var(--glass-foreground) / 0.05) !important; }
+  & [class~='hover:bg-black/6']:hover { background-color: rgb(var(--glass-foreground) / 0.06) !important; }
+  & [class~='dark:bg-white/8'] { background-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='dark:bg-white/7'] { background-color: rgb(var(--glass-foreground) / 0.07) !important; }
+  & [class~='dark:hover:bg-white/5']:hover { background-color: rgb(var(--glass-foreground) / 0.05) !important; }
+  & [class~='dark:hover:bg-white/11']:hover { background-color: rgb(var(--glass-foreground) / 0.11) !important; }
+  & [class~='dark:hover:bg-white/12']:hover { background-color: rgb(var(--glass-foreground) / 0.12) !important; }
+  & [class~='dark:hover:bg-white/6']:hover { background-color: rgb(var(--glass-foreground) / 0.06) !important; }
+  & [class~='dark:hover:bg-white/7']:hover { background-color: rgb(var(--glass-foreground) / 0.07) !important; }
+  & [class~='dark:hover:bg-white/8']:hover { background-color: rgb(var(--glass-foreground) / 0.08) !important; }
+  & [class~='dark:hover:bg-white/10']:hover { background-color: rgb(var(--glass-foreground) / 0.1) !important; }
+  & [class~='dark:focus:border-white/40']:focus { border-color: rgb(var(--glass-foreground) / 0.4) !important; }
+}
+
+body .queue-popup-surface .queue-card-glass .absolute.inset-0 {
+  background: rgb(0 0 0 / .4) !important;
+}
+body .queue-popup-surface .queue-card-glass .absolute.inset-0 > .text-white {
+  color: white !important;
+}
+body .fullscreen-translation-toggle[aria-pressed='true'] {
+  border-color: rgb(var(--glass-foreground) / .3) !important;
+}
+body :is([class*="backdrop-blur-"]:not(.App):not(.main-app):not(.glass-backdrop), .settings-drawer-shell, .management-dialog-panel, .ncm-login-dialog, .ncm-logout-dialog, .ncm-account-menu, .global-search-field, .library-filter-panel, .queue-popup-surface, .fullscreen-layout-switch, .immersive-entry-button, .desktop-player-bar) {
+  & [class~='text-font-color-white/80'] { color: rgb(var(--glass-foreground) / 0.8) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black'] { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/20'] { color: rgb(var(--glass-foreground) / 0.2) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/25'] { color: rgb(var(--glass-foreground) / 0.25) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/28'] { color: rgb(var(--glass-foreground) / 0.28) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/30'] { color: rgb(var(--glass-foreground) / 0.3) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/40'] { color: rgb(var(--glass-foreground) / 0.4) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/45'] { color: rgb(var(--glass-foreground) / 0.45) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/48'] { color: rgb(var(--glass-foreground) / 0.48) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/50'] { color: rgb(var(--glass-foreground) / 0.5) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/52'] { color: rgb(var(--glass-foreground) / 0.52) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/55'] { color: rgb(var(--glass-foreground) / 0.55) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/58'] { color: rgb(var(--glass-foreground) / 0.58) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/60'] { color: rgb(var(--glass-foreground) / 0.6) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/62'] { color: rgb(var(--glass-foreground) / 0.62) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/90'] { color: rgb(var(--glass-foreground) / 0.9) !important; text-shadow: none !important; }
+  & [class~='text-font-color-white/60'] { color: rgb(var(--glass-foreground) / 0.6) !important; text-shadow: none !important; }
+  & [class~='text-font-color-white/20'] { color: rgb(var(--glass-foreground) / 0.2) !important; text-shadow: none !important; }
+  & [class~='text-font-color-white/100'] { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='text-font-color-white/0'] { color: rgb(var(--glass-foreground) / 0) !important; text-shadow: none !important; }
+  & [class~='text-font-color-white'] { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/65'] { color: rgb(var(--glass-foreground) / 0.65) !important; text-shadow: none !important; }
+  & [class~='text-font-color-white/75'] { color: rgb(var(--glass-foreground) / 0.75) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/85'] { color: rgb(var(--glass-foreground) / 0.85) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/80'] { color: rgb(var(--glass-foreground) / 0.8) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/78'] { color: rgb(var(--glass-foreground) / 0.78) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/75'] { color: rgb(var(--glass-foreground) / 0.75) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/72'] { color: rgb(var(--glass-foreground) / 0.72) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/70'] { color: rgb(var(--glass-foreground) / 0.7) !important; text-shadow: none !important; }
+  & [class~='text-font-color-black/88'] { color: rgb(var(--glass-foreground) / 0.88) !important; text-shadow: none !important; }
+  & [class~='placeholder:text-font-color-black/30'] { color: rgb(var(--glass-foreground) / 0.3) !important; text-shadow: none !important; }
+  & [class~='hover:text-font-color-white']:hover { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='hover:text-font-color-black/75']:hover { color: rgb(var(--glass-foreground) / 0.75) !important; text-shadow: none !important; }
+  & [class~='hover:text-font-color-black/60']:hover { color: rgb(var(--glass-foreground) / 0.6) !important; text-shadow: none !important; }
+  & [class~='dark:text-dark-font-color-white'] { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-black'] { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white'] { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/20'] { color: rgb(var(--glass-foreground) / 0.2) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/25'] { color: rgb(var(--glass-foreground) / 0.25) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/28'] { color: rgb(var(--glass-foreground) / 0.28) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/30'] { color: rgb(var(--glass-foreground) / 0.3) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/40'] { color: rgb(var(--glass-foreground) / 0.4) !important; text-shadow: none !important; }
+  & [class~='hover:text-font-color-black/70']:hover { color: rgb(var(--glass-foreground) / 0.7) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/50'] { color: rgb(var(--glass-foreground) / 0.5) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/52'] { color: rgb(var(--glass-foreground) / 0.52) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/45'] { color: rgb(var(--glass-foreground) / 0.45) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/60'] { color: rgb(var(--glass-foreground) / 0.6) !important; text-shadow: none !important; }
+  & [class~='hover:text-font-color-black']:hover { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/92'] { color: rgb(var(--glass-foreground) / 0.92) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/55'] { color: rgb(var(--glass-foreground) / 0.55) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/82'] { color: rgb(var(--glass-foreground) / 0.82) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/80'] { color: rgb(var(--glass-foreground) / 0.8) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/90'] { color: rgb(var(--glass-foreground) / 0.9) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/72'] { color: rgb(var(--glass-foreground) / 0.72) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/70'] { color: rgb(var(--glass-foreground) / 0.7) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/68'] { color: rgb(var(--glass-foreground) / 0.68) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/65'] { color: rgb(var(--glass-foreground) / 0.65) !important; text-shadow: none !important; }
+  & [class~='dark:text-font-color-white/75'] { color: rgb(var(--glass-foreground) / 0.75) !important; text-shadow: none !important; }
+  & [class~='dark:placeholder:text-font-color-white/30'] { color: rgb(var(--glass-foreground) / 0.3) !important; text-shadow: none !important; }
+  & [class~='dark:hover:text-font-color-white/75']:hover { color: rgb(var(--glass-foreground) / 0.75) !important; text-shadow: none !important; }
+  & [class~='dark:hover:text-font-color-white/70']:hover { color: rgb(var(--glass-foreground) / 0.7) !important; text-shadow: none !important; }
+  & [class~='dark:hover:text-font-color-white/60']:hover { color: rgb(var(--glass-foreground) / 0.6) !important; text-shadow: none !important; }
+  & [class~='dark:hover:text-font-color-white']:hover { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+  & [class~='dark:hover:text-font-color-black']:hover { color: rgb(var(--glass-foreground) / 1) !important; text-shadow: none !important; }
+}
+
+:root {
+  --glass-accent: hsl(from hsl(var(--text-color-highlight)) h s clamp(12, l, 20));
+}
+body.dark {
+  --glass-accent: hsl(from hsl(var(--dark-text-color-highlight)) h s clamp(62, l, 85));
+}
+body .global-search-field > :is(span, input, button) {
+  color: rgb(var(--glass-foreground)) !important;
+  text-shadow: none !important;
+}
+body .global-search-field input::placeholder {
+  color: rgb(var(--glass-foreground) / .5) !important;
+  text-shadow: none !important;
+}
+body .queue-popup-surface .queue-card-glass[data-current='true'] .queue-song-title,
+body .queue-popup-surface .queue-card-glass[data-current='true'] > [class*='text-font-color-highlight'] {
+  color: var(--glass-accent) !important;
+}
+body .queue-popup-surface .queue-card-glass[data-current='true'] .eq-bar {
+  background-color: var(--glass-accent) !important;
+}
+body .queue-card-glass[data-current='true'] { background: rgb(var(--glass-foreground) / .08); }
+body .queue-card-glass:hover,
+body .queue-card-glass[data-current='true']:hover { background: rgb(var(--glass-foreground) / .12); }
+/* Keep the player progress line opaque white in both themes. */
+body .desktop-player-bar .seek-bar-slider::before {
+  content: none !important;
+}
+body .desktop-player-bar .seek-bar-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #fff 0%, #fff calc(var(--seek-progress-scale, 0) * 100%), transparent calc(var(--seek-progress-scale, 0) * 100%), transparent 100%) !important;
+}
+body .desktop-player-bar .seek-bar-slider::-webkit-slider-thumb {
+  background-color: #fff !important;
+  border-color: #fff !important;
+}
+/* Selected effect tiles must outrank the glass palette's base utility overrides. */
+body .sound-effects-popup.queue-popup-surface .sound-effects-page button.sound-effect-tile[data-state='on'] {
+  background-color: rgb(var(--glass-foreground) / .2) !important;
+  border-color: rgb(var(--glass-foreground) / .6) !important;
+  color: rgb(var(--glass-foreground)) !important;
+  box-shadow: inset 0 0 0 1px rgb(var(--glass-foreground) / .18), 0 2px 10px rgb(var(--glass-foreground) / .08);
+}
+body .sound-effects-popup .sound-effect-tile[data-state='on'] svg {
+  filter: drop-shadow(0 0 5px rgb(var(--glass-foreground) / .25));
+}
