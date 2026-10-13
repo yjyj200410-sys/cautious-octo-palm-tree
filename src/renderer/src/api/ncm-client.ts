@@ -199,7 +199,7 @@ class NeteaseApiClient {
 
   // ---- 搜索 ----
 
-  async search(keywords: string, type = SearchType.SONG, limit = 30, offset = 0) {
+  async search(keywords: string, type: number = SearchType.SONG, limit = 30, offset = 0) {
     return this.request<{ result: { songs?: SongItem[]; songCount?: number } }>('search', {
       keywords,
       type: String(type),
@@ -209,7 +209,7 @@ class NeteaseApiClient {
   }
 
   /** 综合搜索（多类型） */
-  async cloudSearch(keywords: string, type = SearchType.SONG, limit = 30, offset = 0) {
+  async cloudSearch(keywords: string, type: number = SearchType.SONG, limit = 30, offset = 0) {
     return this.request('cloudsearch', {
       keywords,
       type: String(type),
@@ -430,7 +430,12 @@ class NeteaseApiClient {
 
   /** 歌单广场 — 按分类获取歌单 */
   async topPlaylist(cat = '全部', order: 'hot' | 'new' = 'hot', limit = 60, offset = 0) {
-    return this.request('top/playlist', { cat, order, limit, offset });
+    return this.request('top/playlist', {
+      cat,
+      order,
+      limit: String(limit),
+      offset: String(offset)
+    });
   }
 
   // -- 专辑 --

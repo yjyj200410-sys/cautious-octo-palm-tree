@@ -1,6 +1,6 @@
-import { FavoriteService, type SongIdentity } from '../utils/unifiedStorage';
-import { NeteaseSyncService } from '../ncm/NeteaseSyncService';
 import { currentNcmUid } from '../contexts/NcmUserContext';
+import { NeteaseSyncService } from '../ncm/NeteaseSyncService';
+import { FavoriteService, type SongIdentity } from '../utils/unifiedStorage';
 
 const toggleSongIsFavorite = async (
   songId: number,
@@ -8,50 +8,35 @@ const toggleSongIsFavorite = async (
   isFavorite?: boolean,
   onlyChangeCurrentSongData = false
 ) => {
-  const newFavorite = isFavorite ?? !isCurrentSongAFavorite;
+  const target = isFavorite ?? !isCurrentSongAFavorite;
   const isNcm = songId < 0;
-
+  const owner = currentNcmUid;
   const identity: SongIdentity = isNcm
     ? { source: 'netease', sourceId: String(-songId) }
     : { source: 'local', sourceId: String(songId) };
-
-  // ===== OPTIMISTIC UPDATE =====
-  // 立即更新 unified store，无论最终是否成功
-  if (newFavorite) {
-    FavoriteService.addFavorite(identity);
-  } else {
-    FavoriteService.removeFavorite(identity);
-  }
-
-  // ===== NCM API =====
-  if (isNcm && !onlyChangeCurrentSongData) {
-    try {
-      await NeteaseSyncService.toggleFavoriteSong(-songId, currentNcmUid, newFavorite);
-    } catch (err) {
-      // ROLLBACK: 恢复 optimistic update
-      if (newFavorite) {
-        FavoriteService.removeFavorite(identity);
-      } else {
-        FavoriteService.addFavorite(identity);
+  try {
+    // Publish the state only after its authoritative store confirms the write.
+    // This also prevents a list refresh racing an optimistic cloud mutation.
+    if (!onlyChangeCurrentSongData) {
+      if (isNcm) {
+        await NeteaseSyncService.toggleFavoriteSong(-songId, owner, target);
+        if (owner !== currentNcmUid) return undefined;
+      } else if (isCurrentSongAFavorite !== target) {
+        const result = await window.api.playerControls.toggleLikeSongs([songId], target);
+        if (!(target ? result?.likes : result?.dislikes)?.includes(songId)) {
+          throw new Error('本地收藏未保存，请重试');
+        }
       }
-      console.error('NCM favorite sync failed:', err);
-      return undefined;
     }
+    if (target) FavoriteService.addFavorite(identity);
+    else FavoriteService.removeFavorite(identity);
+    return target;
+  } catch (error) {
+    console.error('Favorite save failed:', error);
+    window.dispatchEvent(
+      new CustomEvent('volo-error', { detail: '喜欢操作失败，请检查登录、网络或本地曲库' })
+    );
+    return undefined;
   }
-
-  // ===== LOCAL DB =====
-  // Local songs: also sync to DB via IPC
-  if (!isNcm && isCurrentSongAFavorite !== newFavorite && !onlyChangeCurrentSongData) {
-    const res = await window.api.playerControls.toggleLikeSongs([songId], newFavorite);
-    if (res && res.likes.length + res.dislikes.length > 0) {
-      return newFavorite;
-    }
-  }
-
-  if (typeof isFavorite === 'boolean') {
-    return isFavorite;
-  }
-  return undefined;
 };
-
 export default toggleSongIsFavorite;

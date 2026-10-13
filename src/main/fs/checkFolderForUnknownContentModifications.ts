@@ -6,7 +6,6 @@ import { getSongsRelativeToFolder } from '@main/db/queries/songs';
 
 import { supportedMusicExtensions } from '../filesystem';
 import logger from '../logger';
-import { generatePalettes } from '../other/generatePalette';
 import { tryToParseSong } from '../parseSong/parseSong';
 import removeSongsFromLibrary from '../removeSongsFromLibrary';
 import { saveAbortController } from './controlAbortControllers';
@@ -80,7 +79,6 @@ const addNewlyAddedSongsToLibrary = async (
       });
     }
   }
-  if (newlyAddedSongPaths.length > 0) setTimeout(generatePalettes, 1500);
 };
 
 const checkFolderForUnknownModifications = async (folderPath: string) => {

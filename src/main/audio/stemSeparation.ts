@@ -161,6 +161,11 @@ export function initializeStemSeparationIPC(sender: WebContents) {
     await cache.setEnabled(enabled);
     return info;
   });
+  ipcMain.handle('mss/clearCache', async (event) => {
+    guard(event.sender);
+    await session.setEnabled(false);
+    await cache.clear();
+  });
   ipcMain.handle('mss/infer', async (event, packet: MssPacket) => {
     guard(event.sender);
     const result = await session.infer(packet);

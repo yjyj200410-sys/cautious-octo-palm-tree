@@ -58,7 +58,10 @@ export const generateFolderStructure = async (dir: string) => {
 };
 
 export const getFolderStructures = async () => {
-  const musicFolderPaths = await showOpenDialog();
+  const musicFolderPaths = await showOpenDialog().catch((error) => {
+    if (error instanceof Error && error.message === 'PROMPT_CLOSED_BEFORE_INPUT') return [];
+    throw error;
+  });
 
   const { fulfilled: folderStructures } = await getAllSettledPromises(
     musicFolderPaths.map((folderPath) => generateFolderStructure(folderPath))

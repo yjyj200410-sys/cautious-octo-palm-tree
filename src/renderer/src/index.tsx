@@ -1,15 +1,13 @@
-import { installCustomTooltips } from './utils/customTooltips';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Link, RouterProvider, createHashHistory, createRouter } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import LuminaLogo from './assets/images/logo_light_mode.png';
-
-import './i18n';
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
+import './i18n';
+import { installCustomTooltips } from './utils/customTooltips';
 
 // Create a new router instance
 export const queryClient = new QueryClient({
@@ -32,9 +30,9 @@ export const router = createRouter({
   defaultPreload: 'intent',
   defaultPreloadDelay: 100,
   defaultPreloadStaleTime: 0,
-  defaultViewTransition: true,
+  defaultViewTransition: false,
   defaultPendingMs: 1000, // Show pending component if loader exceeds 1 second
-  defaultPendingMinMs: 500, // Ensure pending component is shown for at least 500ms
+  defaultPendingMinMs: 0, // Ensure pending component is shown for at least 500ms
   // hydrate: (dehydrated) => {
   //   hydrate(queryClient, dehydrated.queryClientState);
   // },
@@ -43,7 +41,10 @@ export const router = createRouter({
   // },
   defaultPendingComponent: () => {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4" style={{ background: '#0a0a12' }}>
+      <div
+        className="flex h-screen flex-col items-center justify-center gap-4"
+        style={{ background: '#0a0a12' }}
+      >
         <img src={LuminaLogo} alt="Volo" className="h-20 w-20 opacity-80" />
       </div>
     );
@@ -75,7 +76,11 @@ window.addEventListener('error', (e) => {
   console.error('[RENDERER CRASH] window.error:', e.error?.message || e.message, e.error?.stack);
 });
 window.addEventListener('unhandledrejection', (e) => {
-  console.error('[RENDERER CRASH] unhandledrejection:', e.reason?.message || e.reason, e.reason?.stack);
+  console.error(
+    '[RENDERER CRASH] unhandledrejection:',
+    e.reason?.message || e.reason,
+    e.reason?.stack
+  );
 });
 
 const container = document.getElementById('root') as HTMLElement;
@@ -85,7 +90,6 @@ root.render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-      <ReactQueryDevtools />
     </QueryClientProvider>
   </StrictMode>
 );

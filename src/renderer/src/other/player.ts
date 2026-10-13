@@ -1,26 +1,32 @@
+import type { MssPreparedTrack, MssTrack } from '@common/colorosMss';
+import { normalizeNcmSongQuality } from '@common/ncmQuality';
 import type { Subscription } from '@tanstack/react-store';
 
 import { dispatch, store } from '../store/store';
 import storage from '../utils/localStorage';
 import { getPlaybackEndBehavior } from '../utils/playbackEnd';
 import { FavoriteService } from '../utils/unifiedStorage';
-import { createPlayTrace, getPlayTrace } from './PlayTrace';
 import { equalizerBandHertzData } from './equalizerData';
-import {
-  Chorus, Compressor, Context as ToneContext, Panner3D, Phaser, Reverb,
-  StereoWidener, connect as toneConnect
-} from 'tone';
 import PlayerQueue, { type QueueSongMeta } from './playerQueue';
+import { createPlayTrace, getPlayTrace } from './PlayTrace';
 import { PrefetchManager } from './PrefetchManager';
 import { StemSeparation } from './stemSeparation';
-import { isRetroEffect, RetroSoundEffect, type RetroEffectMode } from './retroSoundEffects';
-import type { MssPreparedTrack, MssTrack } from '@common/colorosMss';
-import { normalizeNcmSongQuality } from '@common/ncmQuality';
 
 const AUDIO_FADE_DURATION = 250;
 
 export type SpecialEffectMode =
-  | 'none' | 'studio' | 'spatial' | 'rotate3d' | 'wide' | 'chorus' | 'phaser' | RetroEffectMode;
+  | 'none'
+  | 'studio'
+  | 'spatial'
+  | 'rotate3d'
+  | 'wide'
+  | 'chorus'
+  | 'phaser'
+  | 'radio'
+  | 'cassette'
+  | 'vinyl'
+  | 'gramophone'
+  | 'cd';
 
 type PlayerEventType =
   | 'timeUpdate'
@@ -60,19 +66,9 @@ class AudioPlayer {
   gainNode: GainNode;
   stemSeparation: StemSeparation;
   private mediaSource: MediaElementAudioSourceNode | null = null;
-  private toneContext: ToneContext | null = null;
-  private compressor: Compressor | null = null;
-  private reverb: Reverb | null = null;
-  private panner3d: Panner3D | null = null;
-  private widener: StereoWidener | null = null;
-  private chorus: Chorus | null = null;
-  private phaser: Phaser | null = null;
-  private rotationTimer: ReturnType<typeof setInterval> | null = null;
-  private effectMode: SpecialEffectMode = 'none';
-  private retroEffect: RetroSoundEffect | null = null;
+  // Optional DSP is limited to source separation.
 
   // 离线节拍分析
-
 
   unsubscribeFunc: Subscription;
 
@@ -91,11 +87,11 @@ class AudioPlayer {
   private playRequestId = 0;
   private playbackIntent = false;
   private playbackActionId = 0;
-  private currentMssTrack:MssTrack|null=null;
-  private currentMssRequestId=0;
-  private nextMssGeneration=0;
-  private nextMssKey='';
-
+  private currentMssTrack: MssTrack | null = null;
+  private currentMssRequestId = 0;
+  private mssSourceSwitchId = 0;
+  private nextMssGeneration = 0;
+  private nextMssKey = '';
 
   constructor(queue: PlayerQueue) {
     this.listeners = new Map();
@@ -108,8 +104,16 @@ class AudioPlayer {
 
     this.currentContext = new window.AudioContext({ sampleRate: 48000 });
     this.stemSeparation = new StemSeparation(this.currentContext);
-    this.stemSeparation.onEnabledChange=(enabled)=>{if(enabled)void this.prepareNextMss();else{++this.nextMssGeneration;this.nextMssKey='';this.stemSeparation.setNextTrack(null);}};
-    this.stemSeparation.onCurrentPrepared=prepared=>this.activatePreparedMss(prepared);
+    this.stemSeparation.onEnabledChange = (enabled) => {
+      if (enabled) void this.prepareNextMss();
+      else {
+        this.restoreOriginalMssSource();
+        ++this.nextMssGeneration;
+        this.nextMssKey = '';
+        this.stemSeparation.setNextTrack(null);
+      }
+    };
+    this.stemSeparation.onCurrentPrepared = (prepared) => this.activatePreparedMss(prepared);
     this.equalizerBands = new Map();
     this.gainNode = this.currentContext.createGain();
 
@@ -119,16 +123,36 @@ class AudioPlayer {
     this.initializeEqualizer();
     this.setupQueueIntegration();
     this.setupAudioEventListeners();
+    const restoreOutput = () => {
+      const device = localStorage.getItem('volo:output-device') || '';
+      void this.setOutputDevice(device)
+        .catch(() => this.setOutputDevice(''))
+        .catch(() => {});
+    };
+    restoreOutput();
+    navigator.mediaDevices?.addEventListener('devicechange', restoreOutput);
+  }
 
+  async setOutputDevice(deviceId: string) {
+    // Audio is routed through Web Audio, so the context owns the output device.
+    const context = this.currentContext as AudioContext & {
+      setSinkId?: (id: string) => Promise<void>;
+    };
+    if (!context.setSinkId) {
+      if (deviceId) throw new Error('当前系统不支持切换音频输出设备');
+      return;
+    }
+    await context.setSinkId(deviceId);
+    localStorage.setItem('volo:output-device', deviceId);
   }
 
   /**
    * Sets up integration between queue and player. Automatically loads songs when queue position
    * changes. Propagates queue events through player for convenience.
    *
-   * ★ 预取窗口：只在此处（positionChange）更新，且必须在 loadSong 之后调用——
-   *   loadSong 会同步把当前曲 push 进 PrefetchManager（PLAY_NOW 抢占，activePlayNow=1），
-   *   随后 prefetchAround 排队的 NEXT/NEXT_2 在 P0 解析完成前不会启动（不抢当前曲）。
+   * ★ 预取窗口：只在此处（positionChange）更新，且必须在 loadSong 之后调用—— loadSong 会同步把当前曲 push 进
+   * PrefetchManager（PLAY_NOW 抢占，activePlayNow=1）， 随后 prefetchAround 排队的 NEXT/NEXT_2 在 P0
+   * 解析完成前不会启动（不抢当前曲）。
    */
   private setupQueueIntegration() {
     let lastLoadedSongId: number | null = null;
@@ -174,7 +198,7 @@ class AudioPlayer {
     // Propagate queue change events through player (prefetch window handled on positionChange)
     this.queue.on('queueChange', (data) => {
       this.emit('queueChange', data);
-      if(this.queue.currentSongId===this.currentMssTrack?.songId)void this.prepareNextMss();
+      if (this.queue.currentSongId === this.currentMssTrack?.songId) void this.prepareNextMss();
     });
 
     // Propagate metadata changes
@@ -183,41 +207,105 @@ class AudioPlayer {
     });
   }
 
-  private mssQuality(){return normalizeNcmSongQuality(store.state.localStorage?.preferences?.ncmPlaybackQuality);}
-  private async prepareNextMss(){
-    if(!this.stemSeparation.getSnapshot().enabled)return;
-    const songId=this.queue.nextSongId,quality=this.mssQuality();
-    const key=songId===null?'':`${songId}:${quality}`;
-    if(key===this.nextMssKey)return;
-    this.nextMssKey=key;const generation=++this.nextMssGeneration;
-    this.stemSeparation.setNextTrack(null);
-    if(songId===null){this.stemSeparation.setNextTrack(null);return;}
-    try{
-      const meta=this.queue.getSongMetadata(songId);
-      let data=songId<0&&meta?this.buildSongDataFromMeta(meta):await window.api.audioLibraryControls.getSong(songId);
-      if(!data||generation!==this.nextMssGeneration)return;
-      const cached=await this.stemSeparation.getPrepared(songId,quality,songId>=0?data.path:undefined);
-      let trial=cached?.trial??false;
-      if(cached)data={...data,path:cached.originalPath};
-      else if(songId<0){
-        const path=await this.prefetchMgr.prefetch(songId,'NEXT',{meta:{title:data.title,artists:data.artists?.map(artist=>artist.name).join(' / ')??'',durationMs:data.duration?data.duration*1000:undefined}});
-        if(!path)return;data={...data,path};trial=!!this.prefetchMgr.getCached(songId)?.isTrial;
-      }
-      if(generation!==this.nextMssGeneration||!this.stemSeparation.getSnapshot().enabled)return;
-      this.stemSeparation.setNextTrack({songId,path:data.path,title:data.title,duration:data.duration||undefined,trial,quality});
-    }catch{/* Next track failure must not interrupt current playback. */}
+  private mssQuality() {
+    return normalizeNcmSongQuality(store.state.localStorage?.preferences?.ncmPlaybackQuality);
   }
-  private activatePreparedMss(prepared:MssPreparedTrack){
-    if(this.currentMssRequestId!==this.playRequestId||this.currentMssTrack?.songId!==prepared.songId||this.currentMssTrack.quality!==prepared.quality||this.stemSeparation.getSnapshot().cached||!this.stemSeparation.getSnapshot().enabled)return;
-    const requestId=this.playRequestId,position=this.audio.currentTime;
-    this.stemSeparation.setCachedSource(true);this.stemSeparation.reset();
-    this.audio.crossOrigin='anonymous';this.audio.src=prepared.url;
-    const restore=()=>{
-      if(requestId!==this.playRequestId)return;
-      this.audio.currentTime=Math.min(position,Math.max(0,this.audio.duration-.001));
-      if(this.playbackIntent)void this.play().catch(()=>undefined);
+  private async prepareNextMss() {
+    if (!this.stemSeparation.getSnapshot().enabled) return;
+    const songId = this.queue.nextSongId,
+      quality = this.mssQuality();
+    const key = songId === null ? '' : `${songId}:${quality}`;
+    if (key === this.nextMssKey) return;
+    this.nextMssKey = key;
+    const generation = ++this.nextMssGeneration;
+    this.stemSeparation.setNextTrack(null);
+    if (songId === null) {
+      this.stemSeparation.setNextTrack(null);
+      return;
+    }
+    try {
+      const meta = this.queue.getSongMetadata(songId);
+      let data =
+        songId < 0 && meta
+          ? this.buildSongDataFromMeta(meta)
+          : await window.api.audioLibraryControls.getSong(songId);
+      if (!data || generation !== this.nextMssGeneration) return;
+      const cached = await this.stemSeparation.getPrepared(
+        songId,
+        quality,
+        songId >= 0 ? data.path : undefined
+      );
+      let trial = cached?.trial ?? false;
+      if (cached) data = { ...data, path: cached.originalPath };
+      else if (songId < 0) {
+        const path = await this.prefetchMgr.prefetch(songId, 'NEXT', {
+          meta: {
+            title: data.title,
+            artists: data.artists?.map((artist) => artist.name).join(' / ') ?? '',
+            durationMs: data.duration ? data.duration * 1000 : undefined
+          }
+        });
+        if (!path) return;
+        data = { ...data, path };
+        trial = !!this.prefetchMgr.getCached(songId)?.isTrial;
+      }
+      if (generation !== this.nextMssGeneration || !this.stemSeparation.getSnapshot().enabled)
+        return;
+      this.stemSeparation.setNextTrack({
+        songId,
+        path: data.path,
+        title: data.title,
+        duration: data.duration || undefined,
+        trial,
+        quality
+      });
+    } catch {
+      /* Next track failure must not interrupt current playback. */
+    }
+  }
+  private activatePreparedMss(prepared: MssPreparedTrack) {
+    if (
+      this.currentMssRequestId !== this.playRequestId ||
+      this.currentMssTrack?.songId !== prepared.songId ||
+      this.currentMssTrack.quality !== prepared.quality ||
+      this.stemSeparation.getSnapshot().cached ||
+      !this.stemSeparation.getSnapshot().enabled
+    )
+      return;
+    const switchId = ++this.mssSourceSwitchId;
+    const requestId = this.playRequestId,
+      position = this.audio.currentTime;
+    this.stemSeparation.setCachedSource(true);
+    this.stemSeparation.reset();
+    this.audio.crossOrigin = 'anonymous';
+    this.audio.src = prepared.url;
+    const restore = () => {
+      if (requestId !== this.playRequestId || switchId !== this.mssSourceSwitchId) return;
+      this.audio.currentTime = Math.min(position, Math.max(0, this.audio.duration - 0.001));
+      if (this.playbackIntent) void this.play().catch(() => undefined);
     };
-    this.audio.addEventListener('canplay',restore,{once:true});this.audio.load();
+    this.audio.addEventListener('canplay', restore, { once: true });
+    this.audio.load();
+  }
+
+  private restoreOriginalMssSource() {
+    if (!this.stemSeparation.getSnapshot().cached || !this.currentMssTrack) return;
+    const requestId = this.playRequestId;
+    const switchId = ++this.mssSourceSwitchId;
+    const position = this.audio.currentTime;
+    this.stemSeparation.setCachedSource(false);
+    this.audio.crossOrigin = this.currentMssTrack.songId < 0 ? 'anonymous' : '';
+    this.audio.src = this.currentMssTrack.path;
+    this.audio.addEventListener(
+      'canplay',
+      () => {
+        if (requestId !== this.playRequestId || switchId !== this.mssSourceSwitchId) return;
+        this.audio.currentTime = Math.min(position, Math.max(0, this.audio.duration - 0.001));
+        if (this.playbackIntent) void this.play().catch(() => undefined);
+      },
+      { once: true }
+    );
+    this.audio.load();
   }
 
   /**
@@ -227,8 +315,14 @@ class AudioPlayer {
   private boundEnded = () => this.handleSongEnd();
   private boundTimeUpdate = () => this.emit('timeUpdate', this.audio.currentTime);
   private boundLoadedMetadata = () => this.emit('durationChange', this.audio.duration);
-  private boundPlay = () => { this.stemSeparation.setPlaying(true); this.retroEffect?.setPlaying(true); this.emit('play'); };
-  private boundPause = () => { this.stemSeparation.setPlaying(false); this.retroEffect?.setPlaying(false); this.emit('pause'); };
+  private boundPlay = () => {
+    this.stemSeparation.setPlaying(true);
+    this.emit('play');
+  };
+  private boundPause = () => {
+    this.stemSeparation.setPlaying(false);
+    this.emit('pause');
+  };
   private boundError = (e: Event) => {
     this.hasAudioError = true;
     // Error recovery may replace a failed cache URL with the original stereo URL.
@@ -238,30 +332,42 @@ class AudioPlayer {
       ? { code: this.audio.error.code, message: this.audio.error.message }
       : { code: 'none', message: 'unknown' };
     const buffered = this.getBufferedInfo();
-    console.log(`[AUDIO_ERROR] songId=${store.state.currentSongData?.songId} ` +
-      `errorCode=${errorInfo.code} msg="${errorInfo.message}" ` +
-      `cur=${Math.round(this.audio.currentTime)}s dur=${Math.round(this.audio.duration)}s ` +
-      `readyState=${this.audio.readyState} networkState=${this.audio.networkState} ` +
-      `buffered=${buffered}`);
+    console.log(
+      `[AUDIO_ERROR] songId=${store.state.currentSongData?.songId} ` +
+        `errorCode=${errorInfo.code} msg="${errorInfo.message}" ` +
+        `cur=${Math.round(this.audio.currentTime)}s dur=${Math.round(this.audio.duration)}s ` +
+        `readyState=${this.audio.readyState} networkState=${this.audio.networkState} ` +
+        `buffered=${buffered}`
+    );
     this.emit('error', e);
   };
   private boundStalled = () => {
     const buffered = this.getBufferedInfo();
-    console.warn(`[AUDIO_STALLED] songId=${store.state.currentSongData?.songId} ` +
-      `cur=${Math.round(this.audio.currentTime)}s dur=${Math.round(this.audio.duration)}s ` +
-      `readyState=${this.audio.readyState} networkState=${this.audio.networkState} ` +
-      `buffered=${buffered}`);
+    console.warn(
+      `[AUDIO_STALLED] songId=${store.state.currentSongData?.songId} ` +
+        `cur=${Math.round(this.audio.currentTime)}s dur=${Math.round(this.audio.duration)}s ` +
+        `readyState=${this.audio.readyState} networkState=${this.audio.networkState} ` +
+        `buffered=${buffered}`
+    );
   };
   private boundWaiting = () => {
     const buffered = this.getBufferedInfo();
-    console.warn(`[AUDIO_WAITING] songId=${store.state.currentSongData?.songId} ` +
-      `cur=${Math.round(this.audio.currentTime)}s dur=${Math.round(this.audio.duration)}s ` +
-      `readyState=${this.audio.readyState} networkState=${this.audio.networkState} ` +
-      `buffered=${buffered}`);
+    console.warn(
+      `[AUDIO_WAITING] songId=${store.state.currentSongData?.songId} ` +
+        `cur=${Math.round(this.audio.currentTime)}s dur=${Math.round(this.audio.duration)}s ` +
+        `readyState=${this.audio.readyState} networkState=${this.audio.networkState} ` +
+        `buffered=${buffered}`
+    );
   };
-  private boundSeeking = () => { this.stemSeparation.reset(); this.emit('seeking'); };
+  private boundSeeking = () => {
+    this.stemSeparation.reset();
+    this.emit('seeking');
+  };
   private boundEmptied = () => this.stemSeparation.reset();
-  private boundSeeked = () => { this.stemSeparation.reset(); this.emit('seeked', this.audio.currentTime); };
+  private boundSeeked = () => {
+    this.stemSeparation.reset();
+    this.emit('seeked', this.audio.currentTime);
+  };
 
   private setupAudioEventListeners() {
     this.audio.addEventListener('ended', this.boundEnded);
@@ -302,7 +408,9 @@ class AudioPlayer {
         ranges.push(`${Math.round(b.start(i))}-${Math.round(b.end(i))}s`);
       }
       return ranges.join(',');
-    } catch { return 'error'; }
+    } catch {
+      return 'error';
+    }
   }
 
   /**
@@ -310,46 +418,63 @@ class AudioPlayer {
    * Auto-resumes playback for the next song.
    */
   private async handleSongEnd() {
-
     const metaDuration = store.state.currentSongData?.duration || 0;
     const audioDuration = this.audio.duration;
-    const duration = (metaDuration > 0 && isFinite(metaDuration) && !isNaN(metaDuration))
-      ? metaDuration
-      : (audioDuration > 0 && isFinite(audioDuration) && !isNaN(audioDuration))
-        ? audioDuration
-        : 0;
+    const duration =
+      metaDuration > 0 && isFinite(metaDuration) && !isNaN(metaDuration)
+        ? metaDuration
+        : audioDuration > 0 && isFinite(audioDuration) && !isNaN(audioDuration)
+          ? audioDuration
+          : 0;
     const currentTime = this.audio.currentTime;
     const buffered = this.getBufferedInfo();
 
-    const endBehavior = getPlaybackEndBehavior(this.isCurrentSourceTrial, currentTime, duration, this.repeatMode === 'one');
+    const endBehavior = getPlaybackEndBehavior(
+      this.isCurrentSourceTrial,
+      currentTime,
+      duration,
+      this.repeatMode === 'one'
+    );
     if (endBehavior === 'recover') {
       this.falseEndCount++;
       // ★ 详细诊断日志
       const ae2 = this.audio;
       console.warn(
         `[ENDED_CHECK] FALSE_END ` +
-        `songId=${store.state.currentSongData?.songId} ` +
-        `cur=${Math.round(currentTime)}s dur=${Math.round(duration)}s ` +
-        `metaDur=${metaDuration}s audioDur=${Math.round(audioDuration)}s ` +
-        `paused=${ae2.paused} ` +
-        `readyState=${ae2.readyState} networkState=${ae2.networkState} ` +
-        `hasError=${this.hasAudioError} ` +
-        `errorCode=${ae2.error?.code ?? 'none'} errorMsg="${ae2.error?.message ?? ''}" ` +
-        `buffered=[${buffered}] ` +
-        `falseEndCount=${this.falseEndCount}`
+          `songId=${store.state.currentSongData?.songId} ` +
+          `cur=${Math.round(currentTime)}s dur=${Math.round(duration)}s ` +
+          `metaDur=${metaDuration}s audioDur=${Math.round(audioDuration)}s ` +
+          `paused=${ae2.paused} ` +
+          `readyState=${ae2.readyState} networkState=${ae2.networkState} ` +
+          `hasError=${this.hasAudioError} ` +
+          `errorCode=${ae2.error?.code ?? 'none'} errorMsg="${ae2.error?.message ?? ''}" ` +
+          `buffered=[${buffered}] ` +
+          `falseEndCount=${this.falseEndCount}`
       );
       if (this.falseEndCount > 3) {
-        console.log(`[ENDED_CHECK] too many false ends (error=${this.hasAudioError}), reloading audio`);
+        console.log(
+          `[ENDED_CHECK] too many false ends (error=${this.hasAudioError}), reloading audio`
+        );
         this.falseEndCount = 0;
         this.hasAudioError = false;
         // 重新加载当前源而非直接放弃
         this.audio.load();
-        try { await this.audio.play(); } catch { /* ignore */ }
+        try {
+          await this.audio.play();
+        } catch {
+          /* ignore */
+        }
         return;
       }
-      console.log(`[ENDED_CHECK] false end cur=${Math.round(currentTime)} dur=${Math.round(duration)}`);
+      console.log(
+        `[ENDED_CHECK] false end cur=${Math.round(currentTime)} dur=${Math.round(duration)}`
+      );
       const savedPos = currentTime;
-      try { await this.audio.play(); } catch { /* ignore */ }
+      try {
+        await this.audio.play();
+      } catch {
+        /* ignore */
+      }
       this.audio.currentTime = savedPos;
       return;
     }
@@ -368,7 +493,10 @@ class AudioPlayer {
       this.pendingAutoPlay = true;
       this.queue.moveToNext();
       // Song will be auto-loaded via positionChange event with autoPlay
-    } else if (this.repeatMode === 'all' && this.queue.length > (this.isCurrentSourceTrial ? 1 : 0)) {
+    } else if (
+      this.repeatMode === 'all' &&
+      this.queue.length > (this.isCurrentSourceTrial ? 1 : 0)
+    ) {
       this.pendingAutoPlay = true;
       this.queue.moveToPosition(0);
       this.emit('repeatAll');
@@ -383,17 +511,18 @@ class AudioPlayer {
     return {
       songId: meta.songId,
       title: meta.title,
-        isVip: meta.isVip,
+      isVip: meta.isVip,
       duration: meta.duration,
       artists: meta.artists,
       album: meta.album,
       path: '',
       artworkPath: meta.artworkPath,
-      isAFavorite: meta.songId < 0
-        ? FavoriteService.isFavorite({ source: 'netease', sourceId: String(-meta.songId) })
-        : FavoriteService.isFavorite({ source: 'local', sourceId: String(meta.songId) }),
+      isAFavorite:
+        meta.songId < 0
+          ? FavoriteService.isFavorite({ source: 'netease', sourceId: String(-meta.songId) })
+          : FavoriteService.isFavorite({ source: 'local', sourceId: String(meta.songId) }),
       isKnownSource: meta.isKnownSource,
-      isBlacklisted: meta.isBlacklisted,
+      isBlacklisted: meta.isBlacklisted
     };
   }
 
@@ -402,13 +531,14 @@ class AudioPlayer {
    * provided songData. Sets up audio source and dispatches events.
    *
    * ★ PrefetchManager 单一 URL 路径（取代 AudioPrefetchManager + NcmPlaybackResolver 直调）：
-   *   1. NCM URL 统一经 this.prefetchMgr.prefetch(songId, 'PLAY_NOW') —— 单飞去重 + 缓存命中即返回
-   *   2. generation（this.playRequestId）守卫：resolve 完成后若已被更新的播放请求取代，
-   *      直接返回 null，不触碰 audio.src / store —— 解决快速连点下旧请求干扰新歌曲的问题
-   *   3. URL 在 load 前已缓存（prefetchHit）→ 不做 ?ts= cache-bust（浏览器缓存命中更快）
    *
-   * NOTE: Does NOT swap Audio elements — `this.audio` reference remains stable
-   * so that App.tsx hooks always reference the correct HTMLAudioElement.
+   * 1. NCM URL 统一经 this.prefetchMgr.prefetch(songId, 'PLAY_NOW') —— 单飞去重 + 缓存命中即返回
+   * 2. Generation（this.playRequestId）守卫：resolve 完成后若已被更新的播放请求取代， 直接返回 null，不触碰 audio.src / store ——
+   *    解决快速连点下旧请求干扰新歌曲的问题
+   * 3. URL 在 load 前已缓存（prefetchHit）→ 不做 ?ts= cache-bust（浏览器缓存命中更快）
+   *
+   * NOTE: Does NOT swap Audio elements — `this.audio` reference remains stable so that App.tsx
+   * hooks always reference the correct HTMLAudioElement.
    *
    * @param songIdOrData - The ID of the song to load or the song data object
    * @param options - Optional configuration for song loading
@@ -420,7 +550,8 @@ class AudioPlayer {
   ): Promise<AudioPlayerData | null> {
     this.currentSongLoadStart = performance.now();
     const requestId = ++this.playRequestId;
-    ++this.nextMssGeneration;this.nextMssKey='';
+    ++this.nextMssGeneration;
+    this.nextMssKey = '';
     this.playbackIntent = !!options?.autoPlay;
     ++this.playbackActionId;
     this.stemSeparation.reset();
@@ -428,11 +559,13 @@ class AudioPlayer {
     const trace = getPlayTrace();
     let isTrial = false;
     let wasCached = false; // NCM URL 在本 load 前已就绪（无需本次网络解析）
-    let preparedMss:MssPreparedTrack|null=null;
-    const mssQuality=this.mssQuality();
+    let preparedMss: MssPreparedTrack | null = null;
+    const mssQuality = this.mssQuality();
 
     // ★ 解析 songData：NCM 在队歌曲优先用逻辑队列内存元数据，跳过 app/getSong IPC
-    let songData: AudioPlayerData = { songId: typeof songIdOrData === 'number' ? songIdOrData : songIdOrData.songId } as AudioPlayerData;
+    let songData: AudioPlayerData = {
+      songId: typeof songIdOrData === 'number' ? songIdOrData : songIdOrData.songId
+    } as AudioPlayerData;
     try {
       if (typeof songIdOrData === 'number') {
         const meta = this.queue.getSongMetadata(songIdOrData);
@@ -449,15 +582,26 @@ class AudioPlayer {
 
       if (requestId !== this.playRequestId) return null;
       if (!songData) throw new Error('歌曲元数据不存在');
-      console.log(`[NCM_PLAYER_LOAD] id=${songData.songId} autoPlay=${options?.autoPlay} requestId=${requestId}`);
-      if(this.stemSeparation.getSnapshot().enabled){
-        preparedMss=await this.stemSeparation.getPrepared(songData.songId,mssQuality,songData.songId>=0?songData.path:undefined).catch(()=>null);
-        if(requestId!==this.playRequestId)return null;
+      console.log(
+        `[NCM_PLAYER_LOAD] id=${songData.songId} autoPlay=${options?.autoPlay} requestId=${requestId}`
+      );
+      if (this.stemSeparation.getSnapshot().enabled) {
+        preparedMss = await this.stemSeparation
+          .getPrepared(
+            songData.songId,
+            mssQuality,
+            songData.songId >= 0 ? songData.path : undefined
+          )
+          .catch(() => null);
+        if (requestId !== this.playRequestId) return null;
       }
 
       // ★ NCM：URL 统一走 PrefetchManager
-      if(preparedMss){songData={...songData,path:preparedMss.originalPath};isTrial=preparedMss.trial;wasCached=true;}
-      else if (songData.songId < 0) {
+      if (preparedMss) {
+        songData = { ...songData, path: preparedMss.originalPath };
+        isTrial = preparedMss.trial;
+        wasCached = true;
+      } else if (songData.songId < 0) {
         wasCached = !!prefetchMgr.getCached(songData.songId);
         trace?.log(wasCached ? 'urlCache=HIT' : 'urlCache=MISS');
         trace?.log('resolve start');
@@ -469,8 +613,8 @@ class AudioPlayer {
             artists: artistsStr,
             album: songData.album?.name,
             // ★ 原曲时长（秒→ms）传给 unlock 原版校验，拒绝加速版/DJ加长版
-            durationMs: songData.duration ? songData.duration * 1000 : undefined,
-          },
+            durationMs: songData.duration ? songData.duration * 1000 : undefined
+          }
         });
         trace?.end('resolve');
         trace?.log('url_ready');
@@ -505,7 +649,8 @@ class AudioPlayer {
         // NCM: refresh isAFavorite from unified store (registry entry is stale after toggle)
         if (songData.songId < 0) {
           songData.isAFavorite = FavoriteService.isFavorite({
-            source: 'netease', sourceId: String(-songData.songId)
+            source: 'netease',
+            sourceId: String(-songData.songId)
           });
         }
         dispatch({ type: 'CURRENT_SONG_DATA_CHANGE', data: songData });
@@ -524,19 +669,22 @@ class AudioPlayer {
 
       // ★ 打印 setUrl 前的 URL 和元数据
       const urlPreview = songData.path ? songData.path.slice(0, 120) : 'EMPTY';
-      console.log(`[PLAYER_SET_URL] songId=${songData.songId} duration=${songData.duration}s ` +
-        `url=${urlPreview} hasPath=${!!songData.path}`);
+      console.log(
+        `[PLAYER_SET_URL] songId=${songData.songId} duration=${songData.duration}s ` +
+          `url=${urlPreview} hasPath=${!!songData.path}`
+      );
 
       // ★ 跨域媒体必须走匿名 CORS 模式，否则 WebAudio 图会静音输出（无声音的根因）。
       //   网易云 CDN 返回 Access-Control-Allow-Origin: *，故 crossOrigin='anonymous' 可行。
       //   本地文件（同源）不需要也不应设，避免自定义协议 CORS 校验失败。
       this.stemSeparation.setCachedSource(!!preparedMss);
-      this.audio.crossOrigin = preparedMss||songData.songId < 0 ? 'anonymous' : '';
+      this.audio.crossOrigin = preparedMss || songData.songId < 0 ? 'anonymous' : '';
 
       // Set audio source — URL 在 load 前已缓存则不做 cache-bust（浏览器缓存命中）
       const isPrefetchedUrl = songData.songId < 0 && wasCached;
-      if(preparedMss){this.audio.src=preparedMss.url;}
-      else if (isPrefetchedUrl) {
+      if (preparedMss) {
+        this.audio.src = preparedMss.url;
+      } else if (isPrefetchedUrl) {
         this.audio.src = songData.path as string;
       } else {
         // ★ cache-bust 分隔符按 URL 是否已有查询串选 ? / &：
@@ -548,15 +696,26 @@ class AudioPlayer {
       trace?.log('audio_src_set');
 
       this.audio.load();
-      this.currentMssRequestId=requestId;
-      this.currentMssTrack={songId:songData.songId,path:songData.path,title:songData.title,duration:songData.duration||undefined,trial:isTrial,quality:mssQuality};
+      this.currentMssRequestId = requestId;
+      this.currentMssTrack = {
+        songId: songData.songId,
+        path: songData.path,
+        title: songData.title,
+        duration: songData.duration || undefined,
+        trial: isTrial,
+        quality: mssQuality
+      };
       this.stemSeparation.setCurrentTrack(this.currentMssTrack);
       void this.prepareNextMss();
       if (options?.resumeTime) {
         const restorePosition = () => {
-          if (requestId === this.playRequestId) this.audio.currentTime = Math.min(options.resumeTime!, Math.max(0,this.audio.duration-.01));
+          if (requestId === this.playRequestId)
+            this.audio.currentTime = Math.min(
+              options.resumeTime!,
+              Math.max(0, this.audio.duration - 0.01)
+            );
         };
-        this.audio.addEventListener('loadedmetadata',restorePosition,{once:true});
+        this.audio.addEventListener('loadedmetadata', restorePosition, { once: true });
       }
       trace?.log('audio_load');
 
@@ -579,9 +738,7 @@ class AudioPlayer {
               trace?.end('play_called');
               trace?.done();
             })
-            .catch((err) =>
-              console.error('[AudioPlayer] Immediate auto-play failed:', err)
-            );
+            .catch((err) => console.error('[AudioPlayer] Immediate auto-play failed:', err));
         } else {
           // Wait for canplay event
           const autoPlayHandler = () => {
@@ -597,9 +754,7 @@ class AudioPlayer {
                 trace?.end('play_called');
                 trace?.done();
               })
-              .catch((err) =>
-                console.error('[AudioPlayer] Auto-play on canplay failed:', err)
-              );
+              .catch((err) => console.error('[AudioPlayer] Auto-play on canplay failed:', err));
             this.audio.removeEventListener('canplay', autoPlayHandler);
           };
           this.audio.addEventListener('canplay', autoPlayHandler);
@@ -623,7 +778,11 @@ class AudioPlayer {
       if (requestId !== this.playRequestId) return null;
       if (songData.songId < 0 && error instanceof Error && error.message === '无法获取播放地址') {
         this.unavailableSourceCount += 1;
-        if (this.queue.currentSongId === songData.songId && this.queue.hasNext && this.unavailableSourceCount < 3) {
+        if (
+          this.queue.currentSongId === songData.songId &&
+          this.queue.hasNext &&
+          this.unavailableSourceCount < 3
+        ) {
           this.audio.pause();
           this.pendingAutoPlay = true;
           this.queue.moveToNext();
@@ -637,8 +796,8 @@ class AudioPlayer {
         new CustomEvent('player/loadFailed', {
           detail: {
             songId: songData.songId,
-            error: error instanceof Error ? error.message : String(error),
-          },
+            error: error instanceof Error ? error.message : String(error)
+          }
         })
       );
       throw error; // Re-throw for caller to handle
@@ -658,7 +817,7 @@ class AudioPlayer {
     this.audio.pause();
     this.audio.src = '';
     this.stemSeparation.destroy();
-    this.retroEffect?.dispose();
+
     this.currentContext.close();
     this.prefetchMgr.clear();
   }
@@ -776,116 +935,27 @@ class AudioPlayer {
   }
 
   /** Apply EQ gains to the live audio graph and route optional Tone.js effects. */
-  setSoundEffects(enabled: boolean, mode: SpecialEffectMode, gains: number[]): void {
+  setSoundEffects(enabled: boolean, _mode: SpecialEffectMode, gains: number[]): void {
     const bands = [...this.equalizerBands.values()];
     bands.forEach((band, index) => {
       const gain = enabled ? Math.max(-12, Math.min(12, gains[index] ?? 0)) : 0;
       band.gain.setTargetAtTime(gain, this.currentContext.currentTime, 0.015);
     });
 
-    const nextMode = enabled ? mode : 'none';
-    if (nextMode === this.effectMode) return;
-    const lastFilter = bands.at(-1);
-    if (!lastFilter) return;
-    lastFilter.disconnect();
-    if (this.rotationTimer) clearInterval(this.rotationTimer);
-    this.rotationTimer = null;
-    this.compressor?.dispose();
-    this.reverb?.dispose();
-    this.panner3d?.dispose();
-    this.widener?.dispose();
-    this.chorus?.dispose();
-    this.phaser?.dispose();
-    this.retroEffect?.dispose();
-    this.retroEffect = null;
-    this.compressor = null;
-    this.reverb = null;
-    this.panner3d = null;
-    this.widener = null;
-    this.chorus = null;
-    this.phaser = null;
-
-    if (isRetroEffect(nextMode)) {
-      this.retroEffect = new RetroSoundEffect(this.currentContext, nextMode);
-      lastFilter.connect(this.retroEffect.input);
-      this.retroEffect.output.connect(this.gainNode);
-      this.retroEffect.setPlaying(!this.audio.paused);
-    } else if (nextMode === 'studio') {
-      this.toneContext ??= new ToneContext(this.currentContext);
-      this.compressor = new Compressor({
-        context: this.toneContext,
-        threshold: -22,
-        ratio: 2.5,
-        attack: 0.01,
-        release: 0.2,
-        knee: 12
-      });
-      toneConnect(lastFilter, this.compressor);
-      this.compressor.connect(this.gainNode);
-    } else if (nextMode === 'spatial') {
-      this.toneContext ??= new ToneContext(this.currentContext);
-      this.reverb = new Reverb({
-        context: this.toneContext,
-        decay: 1.5,
-        preDelay: 0.02,
-        wet: 0.16
-      });
-      void this.reverb.ready.catch((error) => console.error('Failed to prepare spatial effect', error));
-      toneConnect(lastFilter, this.reverb);
-      this.reverb.connect(this.gainNode);
-    } else if (nextMode === 'rotate3d') {
-      this.toneContext ??= new ToneContext(this.currentContext);
-      this.panner3d = new Panner3D({
-        context: this.toneContext,
-        panningModel: 'HRTF',
-        distanceModel: 'linear',
-        refDistance: 1,
-        maxDistance: 2,
-        rolloffFactor: 0,
-        positionX: 0,
-        positionY: 0,
-        positionZ: -1.2
-      });
-      toneConnect(lastFilter, this.panner3d);
-      this.panner3d.connect(this.gainNode);
-      const startedAt = performance.now();
-      this.rotationTimer = setInterval(() => {
-        const angle = (performance.now() - startedAt) * (Math.PI * 2 / 8000);
-        this.panner3d?.setPosition(1.2 * Math.sin(angle), 0, -1.2 * Math.cos(angle));
-      }, 40);
-    } else if (nextMode === 'wide') {
-      this.toneContext ??= new ToneContext(this.currentContext);
-      this.widener = new StereoWidener({ context: this.toneContext, width: 0.8 });
-      toneConnect(lastFilter, this.widener);
-      this.widener.connect(this.gainNode);
-    } else if (nextMode === 'chorus') {
-      this.toneContext ??= new ToneContext(this.currentContext);
-      this.chorus = new Chorus({
-        context: this.toneContext, frequency: 0.8, delayTime: 3.5, depth: 0.45, wet: 0.3
-      }).start();
-      toneConnect(lastFilter, this.chorus);
-      this.chorus.connect(this.gainNode);
-    } else if (nextMode === 'phaser') {
-      this.toneContext ??= new ToneContext(this.currentContext);
-      this.phaser = new Phaser({
-        context: this.toneContext, frequency: 0.35, octaves: 3, baseFrequency: 400, wet: 0.3
-      });
-      toneConnect(lastFilter, this.phaser);
-      this.phaser.connect(this.gainNode);
-    } else {
-      lastFilter.connect(this.gainNode);
-    }
-    this.effectMode = nextMode;
+    // Volo plays the source faithfully; decorative sound effects are retired.
   }
 
   /**
-   * Connects the Audio element to the equalizer chain.
-   * Called once during initialization. The Audio element reference
-   * stays stable — never swapped.
+   * Connects the Audio element to the equalizer chain. Called once during initialization. The Audio
+   * element reference stays stable — never swapped.
    */
   private connectAudioSource(audioElement: HTMLAudioElement): void {
     if (this.mediaSource) {
-      try { this.mediaSource.disconnect(); } catch { /* already disconnected */ }
+      try {
+        this.mediaSource.disconnect();
+      } catch {
+        /* already disconnected */
+      }
       this.mediaSource = null;
     }
 
@@ -921,7 +991,8 @@ class AudioPlayer {
         this.updatePlayerVolume(player.volume);
         this.updatePlaybackRate(player.playbackRate);
         this.syncRepeatModeFromStore(player.isRepeating);
-        if(this.nextMssKey&&!this.nextMssKey.endsWith(`:${this.mssQuality()}`))void this.prepareNextMss();
+        if (this.nextMssKey && !this.nextMssKey.endsWith(`:${this.mssQuality()}`))
+          void this.prepareNextMss();
       }
     });
 
@@ -1010,13 +1081,15 @@ class AudioPlayer {
       }
 
       // ★ 创建播放耗时追踪
-      const trace = createPlayTrace();
+      createPlayTrace();
 
       // Start the request generation before any asynchronous metadata fetch.
       const loaded = await this.loadSong(songId, { autoPlay, updateStore: true });
       // ★ loadSong 返回 null = 已被更新的播放请求取代（不记录、不校验）
       if (!loaded) {
-        console.log(`[PLAYER_SKIP] playSongById songId=${songId} superseded — skip recordListening`);
+        console.log(
+          `[PLAYER_SKIP] playSongById songId=${songId} superseded — skip recordListening`
+        );
         return;
       }
 
@@ -1055,7 +1128,6 @@ class AudioPlayer {
    * @param reason - Why the skip occurred ('USER_SKIP' or 'PLAYER_SKIP')
    */
   async skipForward(reason: SongSkipReason = 'USER_SKIP'): Promise<void> {
-
     // Handle repeat-one mode (only auto-repeat, not on user skip)
     if (this.repeatMode === 'one' && reason !== 'USER_SKIP') {
       this.audio.currentTime = 0;
@@ -1075,7 +1147,10 @@ class AudioPlayer {
     if (this.queue.hasNext) {
       this.pendingAutoPlay = true; // Auto-play next song on manual skip
       this.queue.moveToNext();
-    } else if (this.repeatMode === 'all' && this.queue.length > (this.isCurrentSourceTrial ? 1 : 0)) {
+    } else if (
+      this.repeatMode === 'all' &&
+      this.queue.length > (this.isCurrentSourceTrial ? 1 : 0)
+    ) {
       this.pendingAutoPlay = true; // Auto-play when restarting queue
       this.queue.moveToStart();
     }

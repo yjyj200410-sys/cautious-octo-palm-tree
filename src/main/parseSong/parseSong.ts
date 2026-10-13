@@ -10,7 +10,6 @@ import { File } from 'node-taglib-sharp';
 import logger from '../logger';
 import { dataUpdateEvent, sendMessageToRenderer } from '../main';
 import { storeArtworks } from '../other/artworks';
-import { generatePalettes } from '../other/generatePalette';
 import manageAlbumArtistOfParsedSong from './manageAlbumArtistOfParsedSong';
 import manageAlbumsOfParsedSong from './manageAlbumsOfParsedSong';
 import manageArtistsOfParsedSong from './manageArtistsOfParsedSong';
@@ -24,7 +23,7 @@ export const tryToParseSong = (
   songPath: string,
   folderId?: number,
   reparseToSync = false,
-  generatePalettesAfterParsing = false,
+  _generatePalettesAfterParsing = false,
   noRendererMessages = false
 ) => {
   let timeOutId: NodeJS.Timeout;
@@ -40,7 +39,6 @@ export const tryToParseSong = (
       try {
         await parseSong(songPath, folderId, reparseToSync, noRendererMessages);
         logger.debug(`song added to the library.`, { songPath });
-        if (generatePalettesAfterParsing) setTimeout(generatePalettes, 1500);
 
         dataUpdateEvent('songs/newSong');
         pathsQueue.delete(songPath);

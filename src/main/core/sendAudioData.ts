@@ -1,6 +1,5 @@
 import { addSongToPlayHistory } from '@main/db/queries/history';
 import { getPlayableSongById } from '@main/db/queries/songs';
-import { setDiscordRpcActivity } from '@main/other/discordRPC';
 import sharp from 'sharp';
 
 import {
@@ -111,15 +110,6 @@ const sendAudioData = async (songId: number): Promise<AudioPlayerData> => {
 
       addSongToPlayHistory(songId);
 
-      const now = Date.now();
-      setDiscordRpcActivity({
-        details: `Listening to '${data.title}'`,
-        state: `By ${data.artists?.map((artist) => artist.name).join(', ')}`,
-        largeImageKey: 'nora_logo',
-        smallImageKey: 'song_artwork',
-        startTimestamp: now,
-        endTimestamp: now + data.duration * 1000
-      });
       setCurrentSongPath(song.path);
 
       return data;

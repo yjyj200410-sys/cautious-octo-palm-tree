@@ -2,11 +2,10 @@ import PlayerQueue from '@renderer/other/playerQueue';
 import { useEffect } from 'react';
 
 import { proxyCoverUrl } from '../ncm';
-import { FavoriteService } from '../utils/unifiedStorage';
-
 import type AudioPlayer from '../other/player';
 import { dispatch, store } from '../store/store';
 import storage from '../utils/localStorage';
+import { FavoriteService } from '../utils/unifiedStorage';
 
 /** Dependencies required by the app lifecycle hook */
 export interface AppLifecycleDependencies {
@@ -129,9 +128,10 @@ export function useAppLifecycle(dependencies: AppLifecycleDependencies): void {
     const syncCurrentSongFavorite = () => {
       const currentSong = store.state.currentSongData;
       if (!currentSong?.songId) return;
-      const identity = currentSong.songId < 0
-        ? { source: 'netease' as const, sourceId: String(-currentSong.songId) }
-        : { source: 'local' as const, sourceId: String(currentSong.songId) };
+      const identity =
+        currentSong.songId < 0
+          ? { source: 'netease' as const, sourceId: String(-currentSong.songId) }
+          : { source: 'local' as const, sourceId: String(currentSong.songId) };
       const isFavorite = FavoriteService.isFavorite(identity);
       if (currentSong.isAFavorite !== isFavorite) {
         dispatch({ type: 'TOGGLE_IS_FAVORITE_STATE', data: isFavorite });
@@ -140,27 +140,17 @@ export function useAppLifecycle(dependencies: AppLifecycleDependencies): void {
     const unsubscribeFavoriteChanges = FavoriteService.subscribe(syncCurrentSongFavorite);
     syncCurrentSongFavorite();
 
-    // Migrate existing local DB favorites into unified store (one-time)
-    if (!localStorage.getItem('unified_favorites_migrated')) {
-      window.api.audioLibraryControls
-        .getAllFavoriteSongs('addedOrder' as SongSortTypes, { start: 0, end: 0 })
-        .then((result: { data: { songId: number }[] }) => {
-          if (result?.data?.length) {
-            const raw = localStorage.getItem('unified_favorites');
-            const existing: { source: string; sourceId: string }[] = raw ? JSON.parse(raw) : [];
-            for (const song of result.data) {
-              const id = { source: 'local', sourceId: String(song.songId) };
-              if (!existing.some((x) => x.source === id.source && x.sourceId === id.sourceId))
-                existing.push(id);
-            }
-            localStorage.setItem('unified_favorites', JSON.stringify(existing));
-          }
-          // 迁移直接写了 localStorage,同步刷新 FavoriteService 内存缓存(Set),避免 isFavorite 读到旧数据
-          FavoriteService.refreshFavoriteCache();
-          localStorage.setItem('unified_favorites_migrated', 'true');
-        })
-        .catch(() => {});
-    }
+    // The local database is authoritative; read IDs instead of full song metadata.
+    window.api.audioLibraryControls
+      .getAllSongIds('aToZ', 'favorites')
+      .then((result) => {
+        FavoriteService.replaceSource(
+          'local',
+          result.data.map((song) => ({ source: 'local', sourceId: String(song.id) }))
+        );
+        localStorage.setItem('unified_favorites_migrated', 'true');
+      })
+      .catch((error) => console.error('Local favorites could not be restored', error));
 
     const syncLocalStorage = () => {
       const allItems = storage.getAllItems();
@@ -206,11 +196,12 @@ export function useAppLifecycle(dependencies: AppLifecycleDependencies): void {
 
         // ★ 竞态检测：用户是否在异步回调期间已经播放了新歌单
         const currentQueueLen = playerQueue.length;
-        const currentQueueHash = playerQueue.getAllSongIds().slice(0, 10).join(',') + '|' + currentQueueLen;
+        const currentQueueHash =
+          playerQueue.getAllSongIds().slice(0, 10).join(',') + '|' + currentQueueLen;
         if (mountQueueHash && currentQueueHash !== mountQueueHash) {
           console.log(
             `[QUEUE_RESTORE_SKIP] reason=user_queue_changed ` +
-            `mountLen=${mountQueueSnapshot?.songIds.length ?? 0} currentLen=${currentQueueLen}`
+              `mountLen=${mountQueueSnapshot?.songIds.length ?? 0} currentLen=${currentQueueLen}`
           );
           return;
         }
@@ -244,14 +235,19 @@ export function useAppLifecycle(dependencies: AppLifecycleDependencies): void {
             const batchEntries: AudioPlayerData[] = [];
             for (const { id, meta } of ncmMetas) {
               const entry: AudioPlayerData = {
-                songId: id, title: meta.title as string,
+                songId: id,
+                title: meta.title as string,
                 duration: Math.round((meta.duration as number) / 1000),
                 artists: [{ artistId: 0, name: meta.artists as string }],
                 album: { albumId: 0, name: meta.album as string },
                 path: '', // lazy — resolved on first play
                 artworkPath: proxyCoverUrl(meta.cover as string),
-                isAFavorite: FavoriteService.isFavorite({ source: 'netease', sourceId: String(meta.sourceId) }),
-                isKnownSource: true, isBlacklisted: false,
+                isAFavorite: FavoriteService.isFavorite({
+                  source: 'netease',
+                  sourceId: String(meta.sourceId)
+                }),
+                isKnownSource: true,
+                isBlacklisted: false
               };
               batchEntries.push(entry);
               entryByNewId[id] = entry;
@@ -262,7 +258,10 @@ export function useAppLifecycle(dependencies: AppLifecycleDependencies): void {
 
             if (newIds.length > 0) {
               console.log(`[QUEUE_RESTORE_APPLY] queueLength=${newIds.length}`);
-              window.__noraPlayer?.queue?.replaceQueue(newIds, restorePos, true, { queueType: 'songs', queueId: '' });
+              window.__noraPlayer?.queue?.replaceQueue(newIds, restorePos, true, {
+                queueType: 'songs',
+                queueId: ''
+              });
 
               const curId = newIds[restorePos];
               const curEntry = curId < 0 ? entryByNewId[curId] : null;
@@ -277,14 +276,19 @@ export function useAppLifecycle(dependencies: AppLifecycleDependencies): void {
               totalSongs: newIds.length,
               ncmCount: ncmMetas.length,
               resolvedUrls: 0,
-              duration: Math.round(performance.now() - t0),
+              duration: Math.round(performance.now() - t0)
             });
           } else {
             playSong(savedSongId, false);
             player.currentTime = Number(playback.currentSong.stoppedPosition);
-            dispatch({ type: 'UPDATE_SONG_POSITION', data: Number(playback.currentSong.stoppedPosition) });
+            dispatch({
+              type: 'UPDATE_SONG_POSITION',
+              data: Number(playback.currentSong.stoppedPosition)
+            });
           }
-        } catch { /* fail silently */ }
+        } catch {
+          /* fail silently */
+        }
       })
       .catch((err) => console.error(err));
 

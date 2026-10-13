@@ -81,7 +81,7 @@ async function prepare() {
     const encoded = interleaveMssCache(history, block, result, decodedFrames);
     history = block.subarray((MSS_BATCH - MSS_HISTORY) * 8);
     if ('bytes' in encoded) {
-      if ((writtenFrames + encoded.bytes.length / 16) * 16 > 512 * 1024 * 1024)
+      if (44 + (writtenFrames + encoded.bytes.length / 16) * 16 > workerData.maxCacheBytes)
         throw new Error('歌曲超过分轨缓存大小上限');
       // Positional writes avoid partial-write assumptions on large streams.
       let offset = 0;

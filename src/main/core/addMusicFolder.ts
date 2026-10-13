@@ -5,7 +5,6 @@ import parseFolderStructuresForSongPaths, {
 } from '../fs/parseFolderStructuresForSongPaths';
 import logger from '../logger';
 import { dataUpdateEvent, sendMessageToRenderer } from '../main';
-import { generatePalettes } from '../other/generatePalette';
 import { tryToParseSong } from '../parseSong/parseSong';
 import { timeEnd, timeStart } from '../utils/measureTimeUsage';
 
@@ -65,7 +64,6 @@ const addMusicFromFolderStructures = async (
       }
     }
     timeEnd(startTime, 'Time to parse the whole folder');
-    setTimeout(generatePalettes, 1500);
   } else throw new Error('Failed to get song paths from music folders.');
 
   logger.debug(

@@ -80,16 +80,19 @@ const ContextMenu = memo(() => {
         }),
     [menuItems]
   );
-  const visibleHost = (selector: string) => Array.from(document.querySelectorAll<HTMLElement>(selector))
-    .find((element) => element.getClientRects().length > 0);
-  const portalHost = visibleHost('.dialog-menu') ?? visibleHost('.management-dialog-panel') ?? document.body;
+  const visibleHost = (selector: string) =>
+    Array.from(document.querySelectorAll<HTMLElement>(selector)).find(
+      (element) => element.getClientRects().length > 0
+    );
+  const portalHost =
+    visibleHost('.dialog-menu') ?? visibleHost('.management-dialog-panel') ?? document.body;
   return createPortal(
     <div
       className={`context-menu invisible scale-75 opacity-0 ${
         isVisible ? 'visible! scale-100! opacity-100!' : ''
       } ${
         !data && 'pt-2'
-      } bg-context-menu-background/92 text-font-color-black dark:bg-dark-context-menu-background/92 dark:text-font-color-white fixed z-[110] h-fit max-h-[calc(100vh-64px)] w-fit min-w-[15rem] origin-top-left overflow-hidden overflow-y-auto rounded-xl border border-black/8 pt-1 pb-1 shadow-[0_16px_42px_rgba(0,0,0,0.2)] backdrop-blur-xl transition-[opacity,scale,visibility]! dark:border-white/10`}
+      } bg-context-menu-background/92 text-font-color-black dark:bg-dark-context-menu-background/92 dark:text-font-color-white fixed z-[110] h-fit max-h-[calc(100vh-64px)] w-fit min-w-[15rem] origin-top-left overflow-hidden overflow-y-auto rounded-xl border border-black/8 pt-1 pb-1 shadow-[0_16px_42px_rgba(0,0,0,0.2)] transition-[opacity,scale,visibility]! dark:border-white/10`}
       onClick={(e) => e.stopPropagation()}
       style={{
         top: dimensions.positionY,
@@ -103,7 +106,8 @@ const ContextMenu = memo(() => {
     >
       {data && <ContextMenuDataItem data={data} />}
       {contextMenuItems}
-    </div>, portalHost
+    </div>,
+    portalHost
   );
 });
 

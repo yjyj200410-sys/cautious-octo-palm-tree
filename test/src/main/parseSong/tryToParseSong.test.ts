@@ -202,7 +202,7 @@ describe('tryToParseSong', () => {
       expect(logger.debug).toHaveBeenCalledWith('song added to the library.', { songPath });
     });
 
-    test('should call generatePalettes when flag is true', async () => {
+    test('does not schedule retired artwork analysis even with a legacy flag', async () => {
       vi.useFakeTimers();
       const songPath = '/test/song7.mp3';
       const { generatePalettes } = await import('../../../../src/main/other/generatePalette');
@@ -212,7 +212,7 @@ describe('tryToParseSong', () => {
       // Advance timers to trigger setTimeout
       vi.advanceTimersByTime(1500);
 
-      expect(generatePalettes).toHaveBeenCalled();
+      expect(generatePalettes).not.toHaveBeenCalled();
 
       vi.useRealTimers();
     });

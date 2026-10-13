@@ -36,9 +36,11 @@ function writeFavorites(list: SongIdentity[]): void {
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(list));
 }
 
-/** 收藏内存缓存:Set<"source:sourceId">。isFavorite 在渲染期间被逐歌调用,原实现每次
- *  localStorage.getItem+JSON.parse+数组扫描——700 首歌列表 = 700 次磁盘/解析。改为惰性构建
- *  Set,add/remove 同步增删,读操作 O(1)。模块外直接写 localStorage(迁移脚本)须调 refreshFavoriteCache。 */
+/**
+ * 收藏内存缓存:Set<"source:sourceId">。isFavorite 在渲染期间被逐歌调用,原实现每次
+ * localStorage.getItem+JSON.parse+数组扫描——700 首歌列表 = 700 次磁盘/解析。改为惰性构建 Set,add/remove 同步增删,读操作
+ * O(1)。模块外直接写 localStorage(迁移脚本)须调 refreshFavoriteCache。
+ */
 let favoriteSet: Set<string> | null = null;
 const favoriteListeners = new Set<() => void>();
 
@@ -106,6 +108,20 @@ export const FavoriteService = {
     }
   },
 
+  replaceSource(source: SongSource, identities: SongIdentity[]): void {
+    const list = readFavorites();
+    const current = new Set(list.filter((item) => item.source === source).map(favoriteKey));
+    const replacement = new Map(
+      identities.filter((item) => item.source === source).map((item) => [favoriteKey(item), item])
+    );
+    if (current.size === replacement.size && [...current].every((key) => replacement.has(key)))
+      return;
+    const next = [...list.filter((item) => item.source !== source), ...replacement.values()];
+    writeFavorites(next);
+    refreshFavoriteCache();
+    notifyFavoriteListeners();
+  },
+
   isFavorite(identity: SongIdentity): boolean {
     if (!favoriteSet) refreshFavoriteCache();
     return favoriteSet!.has(favoriteKey(identity));
@@ -119,7 +135,7 @@ export const FavoriteService = {
   subscribe(listener: () => void): () => void {
     favoriteListeners.add(listener);
     return () => favoriteListeners.delete(listener);
-  },
+  }
 };
 
 // ── HistoryService ──
@@ -141,9 +157,7 @@ export const HistoryService = {
   record(entry: HistoryEntry): void {
     const list = readHistory();
     // Deduplicate same identity
-    const filtered = list.filter(
-      (x) => !identityMatch(x.identity, entry.identity)
-    );
+    const filtered = list.filter((x) => !identityMatch(x.identity, entry.identity));
     filtered.unshift(entry);
     if (filtered.length > HISTORY_MAX) filtered.length = HISTORY_MAX;
     writeHistory(filtered);
@@ -155,5 +169,5 @@ export const HistoryService = {
 
   clearHistory(): void {
     localStorage.removeItem(HISTORY_KEY);
-  },
+  }
 };

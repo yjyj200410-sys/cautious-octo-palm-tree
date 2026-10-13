@@ -11,7 +11,7 @@ import { createMssWaveHeader } from '../../../src/main/audio/colorosMssEncoder';
 const fixtures = vi.hoisted(() => ({
   workers: [] as {
     messages: { type: string; delayMs?: number }[];
-    data: { outputPath: string; source: string };
+    data: { outputPath: string; source: string; maxCacheBytes: number };
     emit: (type: string, value?: unknown) => void;
   }[]
 }));
@@ -20,8 +20,11 @@ vi.mock('node:worker_threads', async () => {
   return {
     Worker: class extends EventEmitter {
       messages: { type: string; delayMs?: number }[] = [];
-      data: { outputPath: string; source: string };
-      constructor(_path: string, options: { workerData: { outputPath: string; source: string } }) {
+      data: { outputPath: string; source: string; maxCacheBytes: number };
+      constructor(
+        _path: string,
+        options: { workerData: { outputPath: string; source: string; maxCacheBytes: number } }
+      ) {
         super();
         this.data = options.workerData;
         fixtures.workers.push(this);
@@ -33,7 +36,7 @@ vi.mock('node:worker_threads', async () => {
     }
   };
 });
-import { MssTrackCache } from '../../../src/main/audio/colorosMssCache';
+import { MssTrackCache, mssSource } from '../../../src/main/audio/colorosMssCache';
 let root: string;
 const track = (id: number): MssTrack => ({
   songId: id,
@@ -52,7 +55,14 @@ function complete(index: number) {
   worker.emit('message', { type: 'ready', frames: 10 });
   worker.emit('exit', 0);
 }
-describe('current and next full-track cache scheduling', () => {
+describe('on-demand full-track cache scheduling', () => {
+  it('normalizes both legacy Windows metadata paths and encoded audio URLs', () => {
+    expect(mssSource('nora:\\localfiles\\C:\\Music\\Song A.wav?ts=1')).toBe('C:/Music/Song A.wav');
+    expect(mssSource('nora://localfiles/C:/Music/Song%20A.wav?ts=2')).toBe('C:/Music/Song A.wav');
+    expect(mssSource('https://example.com/song.wav?token=1')).toBe(
+      'https://example.com/song.wav?token=1'
+    );
+  });
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), 'volo-mss-'));
     mkdirSync(join(root, 'data'));
@@ -62,7 +72,7 @@ describe('current and next full-track cache scheduling', () => {
     for (const id of [1, 2, 3]) writeFileSync(track(id).path, Buffer.alloc(16));
   });
   afterEach(() => rmSync(root, { recursive: true, force: true }));
-  it('prioritizes current, then next, and keeps processing when paused', async () => {
+  it('prepares only the current track and does not prefetch next', async () => {
     const events: MssCacheStatus[] = [];
     const cache = new MssTrackCache((event) => events.push(event));
     await cache.setCurrent(track(1));
@@ -77,11 +87,10 @@ describe('current and next full-track cache scheduling', () => {
     complete(0);
     await cache.setNext(track(2));
     expect(events.some((event) => event.songId === 1 && event.phase === 'ready')).toBe(true);
-    expect(fixtures.workers).toHaveLength(2);
-    expect(fixtures.workers[1].data.source).toBe(track(2).path);
+    expect(fixtures.workers).toHaveLength(1);
     await cache.setEnabled(false);
   });
-  it('promotes an in-flight next track without restarting its processing', async () => {
+  it('starts the next track only after it becomes current', async () => {
     const cache = new MssTrackCache(() => undefined);
     await cache.setCurrent(track(1));
     await cache.setNext(track(2));
@@ -113,6 +122,17 @@ describe('current and next full-track cache scheduling', () => {
     expect(cache.getPrepared(1, 'lossless')).toBeNull();
     writeFileSync(track(1).path, Buffer.alloc(32));
     expect(cache.getPrepared(1, 'standard', track(1).path)).toBeNull();
+    await cache.setEnabled(false);
+  });
+  it('reserves disk space before preparing a track with unknown duration', async () => {
+    const cache = new MssTrackCache(() => undefined);
+    await cache.setCurrent(track(1));
+    await cache.setEnabled(true);
+    complete(0);
+    await cache.setNext(null);
+    await cache.setCurrent({ ...track(2), duration: undefined });
+    expect(cache.getPrepared(1, 'standard')).toBeNull();
+    expect(fixtures.workers[1].data.maxCacheBytes).toBe(512 * 1024 * 1024);
     await cache.setEnabled(false);
   });
 });

@@ -1,169 +1,46 @@
 # Volo
 
-A free spirited desktop music player built on [Nora Player](https://github.com/Sandakan/Nora). The original project's documentation and links follow below.
+专注听音乐的桌面播放器。采用静态磁带机布局、暖灰机身和陶土橙按钮，提供统一的浅色与深色界面。
 
----
+当前源码版本：**v1.0.0（2026-10-13）**。本仓库的 `main` 分支提供源码；本地构建产物不会随源码提交。版本变化见 [更新记录](changelog.md)。
 
-<div align="center">
+保留网易云登录与账号切换、喜欢的音乐、每日/游客推荐、本地曲库、音乐搜索和按需音频分轨。播放区支持队列、进度、音量、随机/循环、媒体键、托盘和可展开的普通歌词。
 
-<img src="resources/other/nora_logo_banner.webp" alt="Nora Logo">
+WE/网页/视频背景、整窗磨砂玻璃、动态取色、沉浸播放器、独立迷你窗口、桌面歌词、歌词翻译/注音、字体中心和社交集成已从运行链路移除。
 
-# Nora Player
+## 运行与构建
 
-### An elegant music player for the modern desktop
+当前验证环境：Windows x64、Node.js 24、npm 11、Electron 41。
 
-Built with Electron and React • Inspired by [Oto Music](https://play.google.com/store/apps/details?id=com.piyush.music&gl=us)
-
-![GitHub all releases](https://img.shields.io/github/downloads/Sandakan/Nora/total?label=all%20time%20downloads&style=for-the-badge)
-![GitHub release (latest by date)](https://img.shields.io/github/downloads/Sandakan/Nora/v3.1.0-stable/total?style=for-the-badge)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/Sandakan/Nora?color=blue&label=latest%20version&style=for-the-badge)
-
-[![GitHub license](https://img.shields.io/github/license/Sandakan/Nora?style=for-the-badge)](https://github.com/Sandakan/Nora/blob/master/LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/Sandakan/Oto-Music-for-Desktop?style=for-the-badge)](https://github.com/Sandakan/Nora/issues)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Sandakan/Nora/build.yml?branch=master&style=for-the-badge)
-
-[![Crowdin](https://badges.crowdin.net/nora/localized.svg)](https://crowdin.com/project/nora)
-
-[Download](https://github.com/Sandakan/Nora/releases/latest) • [Features](#-features) • [Build Guide](#-build-from-source) • [Changelog](/changelog.md) • [Discord](https://discord.gg/c5rGKnBs4y)
-
-</div>
-
----
-
-## 🎯 Why Nora?
-
-Nora reimagines desktop music playback with thoughtful design and powerful features. Built to overcome the limitations of default music apps, it provides an intuitive and beautiful experience that puts your music front and center.
-
-![Nora Banner Artwork](/resources/other/artwork%200.webp)
-
-## ✨ Features
-
-**Library Management**
-
-- ✅ Organize songs, artists, albums, and playlists with ease
-- ✅ Advanced search with smart song filters
-- ✅ Edit song metadata easily and conveniently[^3]
-
-**Listening Experience**
-
-- ✅ Sing along with song lyrics[^1]
-- ✅ Support for synced lyrics
-- ✅ Last.FM scrobbling integration
-- ✅ Mini-player mode for distraction-free listening
-
-**Personalization**
-
-- ✅ Keep favorite songs and artists close to you
-- ✅ Read your favorite artist's biography
-- ✅ Create playlists that meet your needs
-- ⏳ Personalized music shuffling[^2] (Upcoming)
-
-**Customization**
-
-- ✅ Switch between Light and Dark themes with ease
-
-![Latest Version Artwork](/resources/other/release%20artworks/whats-new-v3.1.0-stable.webp)
-
-Check out the [changelog](/changelog.md) to see what's new in the latest release.
-
-## 📥 Download
-
-Go to the **[Releases page](https://github.com/Sandakan/Nora/releases) > Assets > Choose your platform** or [download the latest version directly](https://github.com/Sandakan/Nora/releases/latest).
-
-## 📸 Gallery
-
-![Support for Online and Offline Lyrics](/resources/other/artwork%201.webp)
-
-![Switch between Dark and Light Modes](/resources/other/artwork%202.webp)
-
-![Support for Last.FM Scrobbling](/resources/other/artwork%209.webp)
-
-![Organize your music library with ease](/resources/other/artwork%203.webp)
-
-![See how your favorite artists appear on songs and albums](/resources/other/artwork%204.webp)
-
-![Keep your favorites closer to you](/resources/other/artwork%205.webp)
-
-![Search through your music library easily and efficiently](/resources/other/artwork%206.webp)
-
-![Edit song metadata and organize your library](/resources/other/artwork%207.webp)
-
-![Listen with the mini player](/resources/other/artwork%208.webp)
-
-## 💬 What People Say
-
-<div align="center">
-
-> _"A sleek music player with a modern design, this solution seeks to provide users with a seamless experience when it comes to listening to their favorite local tunes."_  
-> — Robert Condorache, [Softpedia](https://www.softpedia.com/get/Multimedia/Audio/Audio-Players/Oto-Music-for-Desktop.shtml)
-
----
-
-> _"The application interface adopts rounded corners in a large area, the fonts and icons are round and cute, and the visual effect is very comfortable."_  
-> — [Apps Worth Watching in the Near Future • SSPAI](https://sspai.com/post/78669)
-
----
-
-> _"Just found the most beautiful music player for Windows: Nora"_  
-> — [r/windowsapps • Reddit](https://www.reddit.com/r/windowsapps/comments/11xgg99/just_found_the_most_beautiful_music_player_for/)
-
-</div>
-
-## 🛠 Build From Source
-
-Clone the repository
-
-```bash
-git clone https://github.com/Sandakan/Nora
+```powershell
+npm ci
+npm run dev
 ```
 
-Navigate to project folder
-
-```bash
-cd Nora
+```powershell
+npm run typecheck
+npm run test
+npm run lint
+npm run build:win-x64
 ```
 
-Install dependencies
+构建前会检查 FFmpeg 是否可运行以及分轨模型的 SHA-256，避免把缺失或截断的二进制打进安装包。如 FFmpeg 下载失败，按 [ffmpeg-static 的说明](https://github.com/eugeneware/ffmpeg-static#custom-binaries-url)设置下载源后重新安装完整二进制；仅有文件名或 `MZ` 文件头不代表文件完整。
 
-```bash
-npm install
-```
+Windows 默认使用软件渲染，静态播放器不需要 GPU 特效。驱动兼容性排查时可在启动前设置 `VOLO_HARDWARE_ACCELERATION=1`。开发工具仅在 `VOLO_DEVTOOLS=1` 时自动打开。
 
-Launch in development mode
+## 数据与资源
 
-```bash
-npm start
-```
+- 更名后继续使用 `%APPDATA%/lumina`，保留现有歌曲 ID、曲库、收藏、账号与设置。内部兼容路径及 `nora:` 音频协议不代表产品名称。
+- 首次进入轻量界面会备份旧前端偏好并停用背景与自动歌词转换；不删除用户音乐、原有壁纸文件或歌单数据。
+- 本地曲库与队列使用虚拟列表，可见区域按批次读取元数据。曲库数据库在空闲后关闭并落盘，下次操作时重新打开。
+- 普通播放不加载分轨模型。分轨只准备当前歌曲，关闭时停止 Worker、释放混音节点、恢复原始立体声音源。整曲缓存含临时写入在内限制为 512 MiB；过长曲目可继续实时分轨。
+- 输出设备选择持久化，设备不可用时回退到系统默认。
+- `VOLO_USER_DATA` 仅供隔离测试指定数据目录。性能与回归测试应使用独立目录，不能把生成的假曲目写入日常曲库。
 
-## 📊 Star History
+分轨推理与初次扫描曲库会产生额外负载，不能把静置占用当作全部操作的峰值。真实账号授权、完整曲库迁移与长时间播放仍需在目标环境验收。
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Sandakan/Nora&type=Date)](https://star-history.com/#Sandakan/Nora&Date)
+## 来源与许可
 
-## 🤝 Feedback & Contributing
+Volo 基于 [Nora Player](https://github.com/Sandakan/Nora)，保留原作者 Sandakan Nipunajith 的 MIT 许可与版权声明。依赖许可见 `open_source_licenses.txt`；模型与 FFmpeg 的许可随相应资源分发。
 
-Have feedback, bug reports, or feature requests? Reach out through:
-
-- [Discord Server](https://discord.gg/c5rGKnBs4y)
-- [Email](mailto:sandakannipunajith@gmail.com)
-- [GitHub Issues](https://github.com/Sandakan/Nora/issues)
-
-Help translate Nora on [Crowdin](https://crowdin.com/project/nora)!
-
----
-
-<div align="center">
-
-Made with ❤️ by Sandakan Nipunajith  
-Love, Sri Lanka
-
-_All songs, artists, albums, and cover art used in demonstrations are property of their respective owners and used for illustrative purposes only. All copyrights are respected._
-
-</div>
-
----
-
-[^1]: Song lyrics use the [SongLyrics](https://www.npmjs.com/package/songlyrics) package and an implementation from the [MxLRC](https://github.com/fashni/MxLRC) package.
-
-[^2]: Personalized shuffles and playlists are generated by analyzing listening patterns and play counts.
-
-[^3]: Currently, the app only supports editing MP3 files due to dependency limitations.
+创意组件调研参考 Animata、Magic UI 和 Radix 官方示例。正式界面的 CSS 为本项目实现，未复制付费组件或引入新的动画库。磁带与 CD 的对比原型作为设计交付保留，正式播放器只维护磁带布局。

@@ -17,7 +17,8 @@ import {
   adaptAlbum,
   adaptArtistSongs,
   adaptSearchResult,
-  adaptLyric
+  adaptLyric,
+  coverToArtwork
 } from './adapters';
 import type { NcmSong, NcmPlaylist, NcmAlbum, NcmArtist, NcmSearchResult, NcmLyric } from './types';
 
@@ -96,17 +97,7 @@ export const NcmRepository = {
       cacheSet(cacheKey, result, epoch);
       return result;
     } catch (err) {
-      console.error('[NCM_SEARCH] error', err);
-      return {
-        songs: [],
-        songCount: 0,
-        playlists: [],
-        playlistCount: 0,
-        albums: [],
-        albumCount: 0,
-        artists: [],
-        artistCount: 0
-      };
+      handleError('搜索音乐失败', err);
     }
   },
 
@@ -546,8 +537,24 @@ export const NcmRepository = {
     );
     if (liked?.id) {
       const raw = await ncmApi.getPlaylistDetail(String(liked.id));
-      const pl = (raw as { playlist?: { tracks?: Record<string, unknown>[] } })?.playlist;
-      if (pl?.tracks?.length) return adaptSongs(pl.tracks as Record<string, unknown>[]);
+      const pl = (
+        raw as { playlist?: { tracks?: Record<string, unknown>[]; trackIds?: { id: number }[] } }
+      )?.playlist;
+      if (pl?.tracks?.length) {
+        const orderedIds = pl.trackIds?.map((track) => track.id) || [];
+        const resolved = new Map(adaptSongs(pl.tracks).map((song) => [song.ncmId, song]));
+        const missing = orderedIds.filter((id) => !resolved.has(id));
+        for (let i = 0; i < missing.length; i += 100) {
+          const details = await ncmApi.getSongDetail(missing.slice(i, i + 100));
+          for (const song of adaptSongs(
+            (details as { songs?: Record<string, unknown>[] }).songs || []
+          ))
+            resolved.set(song.ncmId, song);
+        }
+        return orderedIds.length
+          ? orderedIds.map((id) => resolved.get(id)).filter((song): song is NcmSong => !!song)
+          : [...resolved.values()];
+      }
     }
     // Fallback
     const fb = await ncmApi.getLikedSongs(uid);

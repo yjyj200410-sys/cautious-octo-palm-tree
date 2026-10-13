@@ -46,7 +46,7 @@ const PromptMenu = () => {
       >
         <DialogBackdrop
           transition
-          className="glass-backdrop fixed inset-0 h-screen bg-black/25 backdrop-blur-xs transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+          className="glass-backdrop fixed inset-0 h-screen bg-black/25 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
         />
 
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
@@ -54,9 +54,9 @@ const PromptMenu = () => {
             <DialogPanel
               ref={promptMenuRef}
               transition
-              className="dialog-menu bg-background-color-1/85 dark:bg-dark-background-color-1/85 relative h-fit max-h-[calc(100dvh-48px)] w-[min(640px,calc(100vw-48px))] min-w-0 transform select-none overflow-x-hidden overflow-y-auto rounded-2xl text-left shadow-xl ring-1 ring-white/70 backdrop-blur-xl transition-opacity data-closed:opacity-0 duration-180"
+              className="dialog-menu bg-background-color-1/85 dark:bg-dark-background-color-1/85 relative h-fit max-h-[calc(100dvh-48px)] w-[min(640px,calc(100vw-48px))] min-w-0 transform overflow-x-hidden overflow-y-auto rounded-2xl text-left shadow-xl ring-1 ring-white/70 transition-opacity duration-180 select-none data-closed:opacity-0"
             >
-              <div className="sticky top-0 z-10 flex w-full items-center justify-between bg-background-color-1/70 px-6 py-4 backdrop-blur-xl dark:bg-dark-background-color-1/70">
+              <div className="bg-background-color-1/70 dark:bg-dark-background-color-1/70 sticky top-0 z-10 flex w-full items-center justify-between px-6 py-4">
                 <PromptMenuNavigationControlsContainer />
                 <Button
                   key={0}

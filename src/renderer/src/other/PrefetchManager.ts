@@ -6,31 +6,30 @@ import type PlayerQueue from './playerQueue';
  * 取代 AudioPrefetchManager + PrefetchLimiter（两者已删除）。
  *
  * 职责边界（严格，见「Lumina 播放器播放 / 预加载系统重构指令」）：
- *   - 只负责：URL 解析、URL 缓存、in-flight 单飞去重、优先级、预取窗口、
- *              cancel/invalidate、过期（TTL）、generation。
- *   - 不负责：播放队列、AudioPlayer、UI、store、队列状态。绝不创建 Audio 元素
- *             （预取只解析 URL，由 AudioPlayer 在真正播放时 `audio.src` 加载，
- *              避免 14 路 Audio 下载风暴抢当前歌曲的带宽）。
+ *
+ * - 只负责：URL 解析、URL 缓存、in-flight 单飞去重、优先级、预取窗口、 cancel/invalidate、过期（TTL）、generation。
+ * - 不负责：播放队列、AudioPlayer、UI、store、队列状态。绝不创建 Audio 元素 （预取只解析 URL，由 AudioPlayer 在真正播放时 `audio.src` 加载，
+ *   避免 14 路 Audio 下载风暴抢当前歌曲的带宽）。
  *
  * 三档优先级（PrefetchPriority）：
- *   - PLAY_NOW —— 用户点击 / 切歌的当前曲。立即启动并抢占：bump generation、
- *                 丢弃后台排队任务。同一歌曲单飞（共享 promise，不重复请求）。
- *   - NEXT     —— position+1
- *   - NEXT_2   —— position+2
- *   P1/P2 永不在 P0 解析进行中启动（后台预取不抢当前歌曲的网络与 CPU）。
  *
- * TTL（与 NcmPlaybackResolver.resolveCache 分层 TTL 保持一致，但本层 TTL 到期
- * 只是让 URL 从本缓存失效——再次 resolve 会命中 resolver 层缓存，几乎免费）：
- *   - unlocked（需解锁的歌曲）  : 60s
- *   - 预取（NEXT/NEXT_2）        : 120s
- *   - 播放（PLAY_NOW）           : 300s
+ * - PLAY_NOW —— 用户点击 / 切歌的当前曲。立即启动并抢占：bump generation、 丢弃后台排队任务。同一歌曲单飞（共享 promise，不重复请求）。
+ * - NEXT —— position+1
+ * - NEXT_2 —— position+2 P1/P2 永不在 P0 解析进行中启动（后台预取不抢当前歌曲的网络与 CPU）。
+ *
+ * TTL（与 NcmPlaybackResolver.resolveCache 分层 TTL 保持一致，但本层 TTL 到期 只是让 URL 从本缓存失效——再次 resolve 会命中
+ * resolver 层缓存，几乎免费）：
+ *
+ * - Unlocked（需解锁的歌曲） : 60s
+ * - 预取（NEXT/NEXT_2） : 120s
+ * - 播放（PLAY_NOW） : 300s
  */
 
 export type PrefetchPriority = 'PLAY_NOW' | 'NEXT' | 'NEXT_2';
 
 export type SongResourceState = 'idle' | 'loading' | 'ready' | 'failed' | 'expired';
 
-/** resolve 时透传给 NcmPlaybackResolver 的元数据（跳过 songDetail 额外请求）。 */
+/** Resolve 时透传给 NcmPlaybackResolver 的元数据（跳过 songDetail 额外请求）。 */
 export interface PrefetchMeta {
   title: string;
   artists: string; // "歌手A / 歌手B"
@@ -86,16 +85,18 @@ const RESOLVE_TIMEOUT = Symbol('resolve-timeout');
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof RESOLVE_TIMEOUT> {
   return new Promise<T | typeof RESOLVE_TIMEOUT>((resolve, reject) => {
     const timer = setTimeout(() => resolve(RESOLVE_TIMEOUT), ms);
-    promise.then(
-      (v) => {
-        clearTimeout(timer);
-        resolve(v);
-      },
-      (e) => {
-        clearTimeout(timer);
-        reject(e);
-      },
-    );
+    promise
+      .then(
+        (v) => {
+          clearTimeout(timer);
+          resolve(v);
+        },
+        (e) => {
+          clearTimeout(timer);
+          reject(e);
+        }
+      )
+      .catch(reject);
   });
 }
 
@@ -113,12 +114,11 @@ export class PrefetchManager {
   private playGeneration = 0;
   private activePlayNow = 0;
 
-  private constructor() {}
+  private constructor() {
+    /* Created only by getInstance. */
+  }
 
-  /**
-   * 同步读取 URL 缓存（不触发任何解析）。
-   * state 为 ready 且未过期才返回；过期则标记为 expired。
-   */
+  /** 同步读取 URL 缓存（不触发任何解析）。 state 为 ready 且未过期才返回；过期则标记为 expired。 */
   getCached(songId: number): PrefetchResult | undefined {
     const res = this.resources.get(songId);
     if (!res || res.state !== 'ready' || !res.url) return undefined;
@@ -131,15 +131,14 @@ export class PrefetchManager {
       source: res.source || 'unknown',
       unlocked: !!res.unlocked,
       isTrial: !!res.isTrial,
-      cached: true,
+      cached: true
     };
   }
 
   /**
    * 确保某歌曲的 URL 可用。缓存命中立即返回；in-flight 返回同一 promise（单飞）。
    *
-   * PLAY_NOW：立即启动并抢占（bump generation + 丢弃后台排队任务）。
-   * NEXT / NEXT_2：排队，仅在「无 PLAY_NOW 在途」且并发未满时启动。
+   * PLAY_NOW：立即启动并抢占（bump generation + 丢弃后台排队任务）。 NEXT / NEXT_2：排队，仅在「无 PLAY_NOW 在途」且并发未满时启动。
    *
    * @returns 可播放 URL，失败返回 null。
    */
@@ -184,16 +183,19 @@ export class PrefetchManager {
       this.cancelQueued();
       this.startResolve(songId, res, 'PLAY_NOW', opts?.meta);
     } else {
-      this.queued.push({ songId, priority, gen: this.playGeneration, meta: opts?.meta, resource: res });
+      this.queued.push({
+        songId,
+        priority,
+        gen: this.playGeneration,
+        meta: opts?.meta,
+        resource: res
+      });
       this.pump();
     }
     return res.promise;
   }
 
-  /**
-   * 预取播放窗口：position+1（NEXT）与 position+2（NEXT_2）。
-   * 只读取队列的歌曲 ID 与 metadata，不修改队列。
-   */
+  /** 预取播放窗口：position+1（NEXT）与 position+2（NEXT_2）。 只读取队列的歌曲 ID 与 metadata，不修改队列。 */
   prefetchAround(position: number, queue: PlayerQueue): void {
     const next = queue.getSongIdAtPosition(position + 1);
     const next2 = queue.getSongIdAtPosition(position + 2);
@@ -205,7 +207,7 @@ export class PrefetchManager {
         title: m.title,
         artists: m.artists.map((a) => a.name).join(' / '),
         album: m.album?.name,
-        durationMs: m.duration ? m.duration * 1000 : undefined,
+        durationMs: m.duration ? m.duration * 1000 : undefined
       };
     };
     if (next != null) this.prefetch(next, 'NEXT', { meta: metaFor(next) }).catch(() => {});
@@ -328,7 +330,8 @@ export class PrefetchManager {
         res.promise = undefined;
         if (priority === 'PLAY_NOW') this.activePlayNow--;
         this.pump();
-      });
+      })
+      .catch((error) => console.error('Prefetch cleanup failed', error));
   }
 
   /** 真实解析。NCM：NcmPlaybackResolver；本地：audioLibraryControls.getSong。 */
@@ -338,9 +341,7 @@ export class PrefetchManager {
     fromPrefetch = true
   ): Promise<PrefetchResult | null> {
     if (songId < 0) {
-      const { NcmPlaybackResolver } = await import(
-        '../music-source/netease/NcmPlaybackResolver'
-      );
+      const { NcmPlaybackResolver } = await import('../music-source/netease/NcmPlaybackResolver');
       const resolved = await NcmPlaybackResolver.resolve(-songId, {
         fromPrefetch,
         ...(meta && meta.title && meta.artists
@@ -349,10 +350,10 @@ export class PrefetchManager {
                 title: meta.title,
                 artists: meta.artists,
                 album: meta.album,
-                durationMs: meta.durationMs,
-              },
+                durationMs: meta.durationMs
+              }
             }
-          : {}),
+          : {})
       });
       if (!resolved?.url) return null;
       return {
@@ -360,7 +361,7 @@ export class PrefetchManager {
         source: resolved.source || 'unknown',
         unlocked: !!resolved.unlocked,
         isTrial: !!resolved.isTrial,
-        cached: false,
+        cached: false
       };
     }
 

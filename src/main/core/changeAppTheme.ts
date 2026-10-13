@@ -2,7 +2,7 @@ import { getUserSettings, saveUserSettings } from '@main/db/queries/settings';
 import { nativeTheme } from 'electron';
 
 import logger from '../logger';
-import { dataUpdateEvent, getBackgroundColor, mainWindow } from '../main';
+import { dataUpdateEvent, mainWindow } from '../main';
 
 const changeAppTheme = async (theme?: AppTheme) => {
   const { isDarkMode } = await getUserSettings();

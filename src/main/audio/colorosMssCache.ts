@@ -21,8 +21,11 @@ interface Entry {
 export function mssSource(path: string) {
   if (/^https?:\/\//i.test(path)) return path;
   if (path.startsWith('file:')) return fileURLToPath(path);
-  if (path.startsWith('nora:'))
-    return decodeURIComponent(new URL(path).pathname).replace(/^\/(?=[A-Za-z]:)/, '');
+  if (path.startsWith('nora:')) {
+    const url = new URL(path.replaceAll('\\', '/'));
+    const pathname = url.hostname ? url.pathname : url.pathname.replace(/^\/localfiles(?=\/)/, '');
+    return decodeURIComponent(pathname).replace(/^\/(?=[A-Za-z]:)/, '');
+  }
   if (isAbsolute(path)) return path;
   throw new Error('Unsupported audio source');
 }
@@ -48,7 +51,6 @@ export class MssTrackCache {
   private root = join(app.getPath('userData'), 'coloros-mss-cache');
   private entries: Entry[] = [];
   private current: MssTrack | null = null;
-  private next: MssTrack | null = null;
   private enabled = false;
   private playing = false;
   private job: { worker: Worker; track: MssTrack; key: string; done: Promise<void> } | null = null;
@@ -110,6 +112,16 @@ export class MssTrackCache {
     }
     return null;
   }
+  async clear() {
+    await this.setEnabled(false);
+    await this.writeQueue;
+    for (const name of await readdir(this.root)) {
+      if (/^[a-f0-9]{64}\.(wav|part)$/.test(name)) await rm(join(this.root, name), { force: true });
+    }
+    this.entries = [];
+    this.failed.clear();
+    await writeFile(join(this.root, 'index.json'), '[]');
+  }
   setEnabled(enabled: boolean) {
     this.enabled = enabled;
     if (enabled) this.failed.clear();
@@ -119,9 +131,9 @@ export class MssTrackCache {
     this.current = track;
     return this.schedule();
   }
-  setNext(track: MssTrack | null) {
-    this.next = track;
-    return this.schedule();
+  setNext(_track: MssTrack | null) {
+    // Retained IPC contract; the lightweight player never prepares the next track.
+    return this.transition;
   }
   setPlaying(playing: boolean) {
     this.playing = playing;
@@ -135,7 +147,7 @@ export class MssTrackCache {
     this.transition = this.transition
       .then(async () => {
         const desired = this.enabled
-          ? [this.current, this.next].filter((track): track is MssTrack => !!track)
+          ? [this.current].filter((track): track is MssTrack => !!track)
           : [];
         if (this.job) {
           const current = desired[0];
@@ -185,7 +197,8 @@ export class MssTrackCache {
             continue;
           }
           if (this.failed.has(key)) continue;
-          this.start(track, key);
+          const maxCacheBytes = await this.reserve(track);
+          this.start(track, key, maxCacheBytes);
           break;
         }
         return undefined;
@@ -193,7 +206,30 @@ export class MssTrackCache {
       .catch(() => undefined);
     return this.transition;
   }
-  private start(track: MssTrack, key: string) {
+  private async reserve(track: MssTrack) {
+    await this.writeQueue;
+    const limit = 512 * 1024 * 1024;
+    const wanted = Math.min(
+      limit,
+      44 + Math.ceil(track.duration || limit / 16 / MSS_SAMPLE_RATE) * MSS_SAMPLE_RATE * 16
+    );
+    const files = (await readdir(this.root))
+      .filter((name) => /^[a-f0-9]{64}\.wav$/.test(name))
+      .map((name) => ({ key: name.slice(0, -4), size: statSync(join(this.root, name)).size }));
+    let total = files.reduce((sum, file) => sum + file.size, 0);
+    for (const file of files.sort(
+      (a, b) =>
+        (this.entries.find((e) => e.key === a.key)?.used || 0) -
+        (this.entries.find((e) => e.key === b.key)?.used || 0)
+    )) {
+      if (total + wanted <= limit) break;
+      await rm(this.file(file.key), { force: true });
+      total -= file.size;
+      this.entries = this.entries.filter((entry) => entry.key !== file.key);
+    }
+    return limit - total;
+  }
+  private start(track: MssTrack, key: string, maxCacheBytes: number) {
     const mainRoot = app.isPackaged
       ? join(process.resourcesPath, 'app.asar.unpacked', 'out', 'main')
       : join(app.getAppPath(), 'out', 'main');
@@ -207,7 +243,8 @@ export class MssTrackCache {
         source: mssSource(track.path),
         temporaryPath: join(this.root, `${key}.part`),
         outputPath: this.file(key),
-        playing: this.playing
+        playing: this.playing,
+        maxCacheBytes
       }
     });
     let finish!: () => void;
@@ -277,7 +314,7 @@ export class MssTrackCache {
   private saveAndPrune() {
     this.writeQueue = this.writeQueue
       .then(async () => {
-        const protectedIds = new Set([this.current?.songId, this.next?.songId]);
+        const protectedIds = new Set([this.current?.songId]);
         const files = await readdir(this.root);
         let total = 0;
         const wavs = [];
@@ -290,7 +327,7 @@ export class MssTrackCache {
           wavs.push({ key, size, used: entry?.used ?? 0, songId: entry?.track.songId });
         }
         for (const file of wavs.sort((a, b) => a.used - b.used)) {
-          if (total <= 1024 * 1024 * 1024) break;
+          if (total <= 512 * 1024 * 1024) break;
           if (protectedIds.has(file.songId)) continue;
           await rm(this.file(file.key), { force: true });
           total -= file.size;

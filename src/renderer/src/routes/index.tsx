@@ -16,7 +16,7 @@ export const Route = createFileRoute('/')({
   // override pendingMs to 0 to show preloader immediately
   pendingMs: 0,
   // ensure preloader shows for at least 1000ms
-  pendingMinMs: 1000
+  pendingMinMs: 0
 });
 
 function RouteComponent() {

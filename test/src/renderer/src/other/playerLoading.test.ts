@@ -17,7 +17,6 @@ vi.mock('../../../../../src/renderer/src/other/PlayTrace', () => ({
 vi.mock('../../../../../src/renderer/src/other/equalizerData', () => ({
   equalizerBandHertzData: []
 }));
-vi.mock('tone', () => ({}));
 import AudioPlayer from '../../../../../src/renderer/src/other/player';
 import { dispatch, store } from '../../../../../src/renderer/src/store/store';
 
@@ -47,6 +46,7 @@ function createPlayer() {
     nextMssKey: '',
     currentMssTrack: null,
     currentMssRequestId: 0,
+    mssSourceSwitchId: 0,
     listeners: new Map(),
     unavailableSourceCount: 0,
     queue: { getSongMetadata: () => undefined, nextSongId: null },
@@ -88,6 +88,20 @@ describe('playback request ordering and intent', () => {
         }
       }
     );
+  });
+  it('restores stereo source and paused position when leaving a four-channel cache', () => {
+    const player = createPlayer();
+    player.currentMssTrack = { songId: 1, path: '/song-1.mp3' };
+    player.stemSeparation.getSnapshot = () => ({ cached: true });
+    player.audio.src = 'nora:///cache.wav';
+    player.audio.currentTime = 42;
+    player.restoreOriginalMssSource();
+    player.audio.currentTime = 0;
+    player.audio.dispatchEvent(new Event('canplay'));
+    expect(player.audio.src).toBe('/song-1.mp3');
+    expect(player.audio.currentTime).toBe(42);
+    expect(player.audio.play).not.toHaveBeenCalled();
+    expect(player.stemSeparation.setCachedSource).toHaveBeenCalledWith(false);
   });
   it('assigns the original source immediately with real-time separation enabled', async () => {
     const player = createPlayer();
@@ -144,14 +158,12 @@ describe('playback request ordering and intent', () => {
   it('plays prepared network audio without re-resolving an expired original URL', async () => {
     const player = createPlayer();
     player.stemSeparation.getSnapshot = () => ({ enabled: true });
-    player.stemSeparation.getPrepared = vi
-      .fn()
-      .mockResolvedValue({
-        songId: -1,
-        originalPath: 'https://example.com/expired.mp3',
-        url: 'nora:///prepared.wav',
-        trial: false
-      });
+    player.stemSeparation.getPrepared = vi.fn().mockResolvedValue({
+      songId: -1,
+      originalPath: 'https://example.com/expired.mp3',
+      url: 'nora:///prepared.wav',
+      trial: false
+    });
     player.prefetchMgr.prefetch = vi.fn();
     await player.loadSong({ ...song(-1), artists: [] }, { autoPlay: false });
     expect(player.prefetchMgr.prefetch).not.toHaveBeenCalled();

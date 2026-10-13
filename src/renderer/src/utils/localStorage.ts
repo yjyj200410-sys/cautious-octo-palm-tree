@@ -88,6 +88,29 @@ const checkLocalStorage = () => {
     localStorage.setItem('localStorage', JSON.stringify(updatedStore));
     localStorage.setItem('version', migratedVersion);
   }
+  const current = getLocalStorage();
+  if (!localStorage.getItem('volo:lightweight-migration:1')) {
+    localStorage.setItem(
+      'volo:preferences-before-lightweight',
+      JSON.stringify(current.preferences)
+    );
+    localStorage.setItem('volo:lightweight-migration:1', '1');
+  }
+  Object.assign(current.preferences, {
+    customBackgroundPath: '__none__',
+    customBackgroundType: 'image',
+    backgroundSource: 'none',
+    backgroundBlur: 0,
+    enableDynamicBackground: false,
+    enableDynamicTheme: false,
+    autoTranslateLyrics: false,
+    autoConvertLyrics: false,
+    defaultPageOnStartUp: 'home',
+    customFont: '',
+    lyricsFont: ''
+  });
+
+  setLocalStorage(current);
   return console.log('local storage check successful.');
 };
 
@@ -104,9 +127,12 @@ const getLocalStorage = (): LocalStorage => {
   return LOCAL_STORAGE_DEFAULT_TEMPLATE;
 };
 
+let lastSavedStorage = '';
 const setLocalStorage = (storage: LocalStorage) => {
   try {
     const updatedStorageString = JSON.stringify(storage);
+    if (updatedStorageString === lastSavedStorage) return;
+    lastSavedStorage = updatedStorageString;
     localStorage.setItem('localStorage', updatedStorageString);
   } catch (error) {
     console.error(error);

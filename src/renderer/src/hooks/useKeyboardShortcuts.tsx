@@ -106,6 +106,14 @@ export function useKeyboardShortcuts(dependencies: KeyboardShortcutDependencies)
 
   const manageKeyboardShortcuts = useCallback(
     (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
+      if (
+        e.target instanceof Element &&
+        e.target.closest(
+          'input, textarea, select, button, [contenteditable="true"], [role="dialog"]'
+        )
+      )
+        return;
       // F11: Toggle fullscreen (always active, regardless of custom shortcuts)
       if (e.key === 'F11') {
         e.preventDefault();

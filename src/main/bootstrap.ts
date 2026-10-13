@@ -3,8 +3,14 @@ import { join } from 'node:path';
 
 import { app } from 'electron';
 
+// The static Windows interface needs no GPU effects. Software rendering reduces
+// retained surfaces; an explicit opt-in remains available for driver compatibility.
+if (process.platform === 'win32' && process.env.VOLO_HARDWARE_ACCELERATION !== '1') {
+  app.disableHardwareAcceleration();
+}
+
 // Preserve the existing library, accounts, and preferences after the public rename.
-const legacyUserDataPath = join(app.getPath('appData'), 'lumina');
+const legacyUserDataPath = process.env.VOLO_USER_DATA || join(app.getPath('appData'), 'lumina');
 mkdirSync(legacyUserDataPath, { recursive: true });
 app.setPath('userData', legacyUserDataPath);
 

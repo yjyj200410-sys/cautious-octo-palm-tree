@@ -1,5 +1,4 @@
-import { copyFileSync, mkdirSync } from 'fs';
-import { resolve, join } from 'path';
+import { resolve } from 'path';
 
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
@@ -12,7 +11,11 @@ export default defineConfig({
       sourcemap: true,
       minify: false,
       rollupOptions: {
-        input: { main: '/src/main/bootstrap.ts', colorosMssWorker: '/src/main/audio/colorosMssWorker.ts', colorosMssPrepareWorker:'/src/main/audio/colorosMssPrepareWorker.ts' },
+        input: {
+          main: '/src/main/bootstrap.ts',
+          colorosMssWorker: '/src/main/audio/colorosMssWorker.ts',
+          colorosMssPrepareWorker: '/src/main/audio/colorosMssPrepareWorker.ts'
+        },
         external: ['sharp', 'ffmpeg-static', 'onnxruntime-node', /@neteasecloudmusicapienhanced/]
       }
     },
@@ -37,12 +40,9 @@ export default defineConfig({
       sourcemap: true,
       rollupOptions: {
         input: {
-          main: resolve(import.meta.dirname, './src/renderer/index.html'),
-          'desktop-lyrics': resolve(import.meta.dirname, './src/renderer/desktop-lyrics.html'),
-          'mini-player': resolve(import.meta.dirname, './src/renderer/mini-player.html'),
-          'tray-menu': resolve(import.meta.dirname, './src/renderer/tray-menu.html'),
-        },
-      },
+          main: resolve(import.meta.dirname, './src/renderer/index.html')
+        }
+      }
     },
     resolve: {
       alias: {
@@ -53,18 +53,6 @@ export default defineConfig({
       }
     },
     plugins: [
-      // Copy built-in wallpaper HTML files to out/builtin-wallpapers/
-      {
-        name: 'copy-builtin-wallpapers',
-        writeBundle() {
-          const srcDir = resolve(import.meta.dirname, './src/renderer/src/assets/builtin-wallpapers');
-          const destDir = resolve(import.meta.dirname, './out/builtin-wallpapers');
-          mkdirSync(destDir, { recursive: true });
-          for (const name of ['starfield.html', 'static-glow.html']) {
-            copyFileSync(join(srcDir, name), join(destDir, name));
-          }
-        },
-      },
       tanstackRouter({
         target: 'react',
         routesDirectory: 'src/routes',

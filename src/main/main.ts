@@ -1,5 +1,4 @@
 import os from 'os';
-import { installWindowsMaximizeEdges } from './core/windowsMaximizeEdges';
 import path, { join } from 'path';
 
 import { getSongById } from '@main/db/queries/songs';
@@ -13,12 +12,12 @@ import {
   crashReporter,
   nativeTheme,
   Tray,
+  Menu,
   nativeImage,
   powerMonitor,
   net,
   powerSaveBlocker,
   screen,
-  session as electronSession,
   ipcMain,
   type OpenDialogOptions,
   type SaveDialogOptions,
@@ -28,11 +27,12 @@ import {
 import { version, appPreferences } from '../../package.json';
 import noraAppIcon from '../../resources/logo_light_mode.png?asset';
 import roundTo from '../common/roundTo';
-import manageLastFmAuth from './auth/manageLastFmAuth';
 import changeAppTheme from './core/changeAppTheme';
 import checkForNewSongs from './core/checkForNewSongs';
 import checkForStartUpSongs from './core/checkForStartUpSongs';
 import manageTaskbarPlaybackButtonControls from './core/manageTaskbarPlaybackButtonControls';
+import { setMainWindowRef } from './core/windowRef';
+import { installWindowsMaximizeEdges } from './core/windowsMaximizeEdges';
 // import { fileURLToPath, pathToFileURL } from 'url';
 import { closeDatabaseInstance } from './db/db';
 import { getUserSettings, saveUserSettings } from './db/queries/settings';
@@ -41,7 +41,6 @@ import addWatchersToParentFolders from './fs/addWatchersToParentFolders';
 import { closeAllAbortControllers, saveAbortController } from './fs/controlAbortControllers';
 import { handleFileProtocol } from './handleFileProtocol';
 import { initializeIPC } from './ipc';
-import { setMainWindowRef } from './core/windowRef';
 import logger from './logger';
 
 // Gracefully handle EPIPE (broken pipe) — common in WSLg when terminal closes.
@@ -73,15 +72,10 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 import { startNcmServer } from './ncm-server/ncm-server';
-
-import { startWallpaperServer } from './wallpaperServer';
-export { registerWallpaper, getWallpaperUrl } from './wallpaperServer';
 import { clearTempArtworkFolder } from './other/artworks';
-import { clearDiscordRpcActivity } from './other/discordRPC';
 import resetAppData from './resetAppData';
 import { savePendingSongLyrics } from './saveLyricsToSong';
 // import checkForUpdates from './update';
-import { savePendingMetadataUpdates } from './updateSong/updateSongId3Tags';
 
 // / / / / / / / CONSTANTS / / / / / / / / /
 const DEFAULT_APP_PROTOCOL = 'nora';
@@ -98,11 +92,6 @@ const MAIN_WINDOW_DEFAULT_ZOOM_FACTOR = 0.8;
 const MAIN_WINDOW_MIN_ZOOM_FACTOR = 0.5;
 const MAIN_WINDOW_MAX_ZOOM_FACTOR = 3;
 
-const MINI_PLAYER_MIN_SIZE_X = 270;
-const MINI_PLAYER_MIN_SIZE_Y = 200;
-const MINI_PLAYER_MAX_SIZE_X = 510;
-const MINI_PLAYER_MAX_SIZE_Y = 300;
-const MINI_PLAYER_ASPECT_RATIO = 17 / 10;
 const abortController = new AbortController();
 const DEFAULT_OPEN_DIALOG_OPTIONS: OpenDialogOptions = {
   title: 'Select a Music Folder',
@@ -177,35 +166,7 @@ const APP_INFO = {
   }
 };
 
-logger.debug(`Starting up Nora`, { APP_INFO });
-
-function launchExtensionBackgroundWorkers(session = electronSession.defaultSession) {
-  return Promise.all(
-    session.extensions.getAllExtensions().map(async (extension) => {
-      const manifest = extension.manifest;
-      if (manifest.manifest_version === 3 && manifest?.background?.service_worker) {
-        await session.serviceWorkers.startWorkerForScope(extension.url);
-      }
-    })
-  );
-}
-
-const installExtensions = async () => {
-  try {
-    const { default: installExtension, REACT_DEVELOPER_TOOLS } =
-      await import('electron-devtools-installer');
-    const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-
-    const ext = await installExtension(REACT_DEVELOPER_TOOLS, {
-      loadExtensionOptions: { allowFileAccess: true },
-      forceDownload
-    });
-    logger.debug(`Added Extension: ${ext}`);
-    await launchExtensionBackgroundWorkers();
-  } catch (error) {
-    logger.error(`Failed to install extensions to devtools`, { error });
-  }
-};
+logger.debug(`Starting up Volo`, { APP_INFO });
 
 export const getBackgroundColor = async () => {
   const { isDarkMode } = await getUserSettings();
@@ -263,8 +224,6 @@ const restoreWindowZoomOnFocus = () => {
 };
 
 const createWindow = async () => {
-  if (IS_DEVELOPMENT) await installExtensions();
-
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 700,
@@ -291,7 +250,6 @@ const createWindow = async () => {
   installWindowsMaximizeEdges(mainWindow);
 
   setMainWindowRef(mainWindow);
-  import('./miniPlayer').then(({ setMainWindowRef: setMiniMainRef }) => setMiniMainRef(mainWindow));
 
   mainWindow.webContents.once('did-finish-load', manageWindowFinishLoad);
 
@@ -342,20 +300,6 @@ app
   .then(async () => {
     // Start NCM local proxy server (fire-and-forget, won't block startup)
     startNcmServer().catch((err) => logger.error('NCM server failed to start', { err }));
-    startWallpaperServer().catch((err) => logger.error('Wallpaper server failed to start', { err }));
-
-
-    // Setup desktop lyrics IPC — 窗口按需创建:点击开关按钮才加载,关闭即销毁
-    import('./desktopLyrics').then(({ setupDesktopLyricsIpc }) => {
-      setupDesktopLyricsIpc();
-    });
-    // Setup mini player window IPC
-    import('./miniPlayer').then(({ setupMiniPlayerIpc, preloadMiniPlayerWindow }) => {
-      setupMiniPlayerIpc();
-      // 预创建窗口(保持隐藏)— 首次打开无需等待加载
-      setTimeout(() => preloadMiniPlayerWindow(), 3000);
-    });
-
     const { windowState, zoomFactor } = await getUserSettings();
 
     currentWindowZoomFactor = normalizeZoomFactor(zoomFactor);
@@ -376,23 +320,27 @@ app
     protocol.handle('nora', handleFileProtocol);
 
     tray = new Tray(appIcon);
-    tray.setToolTip('Nora');
-
-    // 托盘菜单:独立透明置顶窗口,在托盘图标位置弹出,点击菜单项不关闭
-    tray.setContextMenu(null);
-    const { showTrayMenu, sendTrayMenuState, setupTrayMenuIpc, preloadTrayMenuWindow } = await import('./trayMenuWindow');
-    setupTrayMenuIpc();
-    // 预创建菜单窗口(保持隐藏)— 右键托盘即时显示
-    setTimeout(() => preloadTrayMenuWindow(), 3000);
-    tray.on('right-click', (_e, bounds) => {
-      showTrayMenu(bounds?.x ?? 0, bounds?.y ?? 0);
-    });
-
-    // 播放状态 → 托盘菜单窗口(与 mini 播放器同一份推送)
-    ipcMain.on('mini-player:send-state', (_e, payload) => {
-      sendTrayMenuState(payload);
-    });
-
+    tray.setToolTip('Volo');
+    tray.setContextMenu(
+      Menu.buildFromTemplate([
+        {
+          label: '打开 Volo',
+          click: () => {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        },
+        { type: 'separator' },
+        {
+          label: '播放 / 暂停',
+          click: () => mainWindow.webContents.send('app/player/toggleSongPlaybackState')
+        },
+        { label: '上一首', click: () => mainWindow.webContents.send('app/player/skipBackward') },
+        { label: '下一首', click: () => mainWindow.webContents.send('app/player/skipForward') },
+        { type: 'separator' },
+        { label: '退出', click: () => app.quit() }
+      ])
+    );
     tray.addListener('double-click', () => {
       if (mainWindow.isVisible()) mainWindow.hide();
       else mainWindow.show();
@@ -400,7 +348,9 @@ app
 
     // powerMonitor.addListener('shutdown', (e) => e.preventDefault());
 
-    app.on('before-quit', () => { isQuitting = true; });
+    app.on('before-quit', () => {
+      isQuitting = true;
+    });
     app.on('before-quit', handleBeforeQuit);
 
     app.on('will-quit', closeDatabaseInstance);
@@ -488,7 +438,7 @@ app
         toggleMiniPlayerAlwaysOnTop,
         toggleOnBatteryPower,
         toggleMainWindowMaximize,
-        isMainWindowMaximized,
+        isMainWindowMaximized
       });
 
       // Fullscreen IPC — registered here to avoid circular import with ipc.ts
@@ -547,8 +497,8 @@ async function manageWindowFinishLoad() {
   mainWindow.show();
   manageWindowPositionInMonitor();
 
-
-  if (IS_DEVELOPMENT) mainWindow.webContents.openDevTools({ mode: 'detach', activate: true });
+  if (process.env.VOLO_DEVTOOLS === '1')
+    mainWindow.webContents.openDevTools({ mode: 'detach', activate: true });
 
   logger.debug(`Starting up the renderer.`);
 
@@ -570,23 +520,17 @@ let asyncOperationDone = false;
 async function handleBeforeQuit() {
   if (!asyncOperationDone) {
     try {
-      try {
-        await clearDiscordRpcActivity();
-      } catch (error) {
-        logger.error('Optional cleanup functions failed when quiting the app.', { error });
-      }
-
       const promise1 = savePendingSongLyrics(currentSongPath, true);
-      const promise2 = savePendingMetadataUpdates(currentSongPath, true);
+
       const promise3 = closeAllAbortControllers();
       const promise4 = clearTempArtworkFolder();
 
-      await Promise.all([promise1, promise2, promise3, promise4]);
+      await Promise.all([promise1, promise3, promise4]);
 
       mainWindow.webContents.send('app/beforeQuitEvent');
       await closeDatabaseInstance();
 
-      logger.debug(`Quiting Nora`, { uptime: `${Math.floor(process.uptime())} seconds` });
+      logger.debug(`Quitting Volo`, { uptime: `${Math.floor(process.uptime())} seconds` });
       asyncOperationDone = true;
     } catch (error) {
       asyncOperationDone = true;
@@ -708,7 +652,6 @@ function addEventsToCache(dataType: DataUpdateEventTypes, data = [] as number[],
 export const setCurrentSongPath = (songPath: string) => {
   currentSongPath = songPath;
   savePendingSongLyrics(currentSongPath, false);
-  savePendingMetadataUpdates(currentSongPath, true);
 };
 
 export const getCurrentSongPath = () => currentSongPath;
@@ -720,7 +663,7 @@ function manageAuthServices(url: string) {
   if (searchParams.has('service')) {
     if (searchParams.get('service') === 'lastfm') {
       const token = searchParams.get('token');
-      if (token) return manageLastFmAuth(token);
+      if (token) return;
     }
   }
   return undefined;
@@ -747,11 +690,7 @@ export async function showSaveDialog(saveDialogOptions = DEFAULT_SAVE_DIALOG_OPT
 }
 
 function manageAppMoveEvent() {
-  if (
-    mainWindow.isFullScreen() ||
-    isMainWindowMaximized() ||
-    mainWindow.isMinimized()
-  ) return;
+  if (mainWindow.isFullScreen() || isMainWindowMaximized() || mainWindow.isMinimized()) return;
   const [x, y] = mainWindow.getPosition();
   logger.debug(`User moved the player`, { playerType, coordinates: { x, y } });
 
@@ -760,11 +699,7 @@ function manageAppMoveEvent() {
 }
 
 function manageAppResizeEvent() {
-  if (
-    mainWindow.isFullScreen() ||
-    isMainWindowMaximized() ||
-    mainWindow.isMinimized()
-  ) return;
+  if (mainWindow.isFullScreen() || isMainWindowMaximized() || mainWindow.isMinimized()) return;
   const [x, y] = mainWindow.getSize();
   logger.debug(`User resized the player`, { playerType, coordinates: { x, y } });
 
@@ -797,7 +732,7 @@ export function restartApp(reason: string, noQuitEvents = false) {
   if (!noQuitEvents) {
     mainWindow.webContents.send('app/beforeQuitEvent');
     savePendingSongLyrics(currentSongPath, true);
-    savePendingMetadataUpdates(currentSongPath, true);
+
     closeAllAbortControllers();
   }
   app.relaunch();
@@ -854,108 +789,6 @@ export async function getImagefileLocation() {
 
 // (selectCustomBackground / listBackgrounds / deleteBackground moved to core/backgroundManager.ts)
 // (getFontFileLocation moved to core/fontManager.ts)
-
-export async function inlineWallpaperHtml(filePath: string) {
-  try {
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const mime = await import('mime');
-
-    const dir = path.dirname(filePath);
-    let html = await fs.readFile(filePath, 'utf-8');
-
-    // Inline <script src="..."> → <script>content</script>
-    html = await replaceAsync(html, /<script\b[^>]*\bsrc="([^"]*\.(?:js|mjs)[^"]*)"[^>]*>\s*<\/script>/gi, async (match, src) => {
-      if (/^https?:\/\//i.test(src)) return match;
-      const fullPath = path.resolve(dir, src);
-      try {
-        const content = await fs.readFile(fullPath, 'utf-8');
-        return match.replace(/\bsrc="[^"]*"/i, '').replace('><', `>${content}<`);
-      } catch { return match; }
-    });
-
-    // Inline <link href="...css"> → <style>content</style>
-    html = await replaceAsync(html, /<link\b[^>]*\bhref="([^"]*\.css[^"]*)"[^>]*>/gi, async (match, href) => {
-      if (/^https?:\/\//i.test(href)) return match;
-      const fullPath = path.resolve(dir, href);
-      try {
-        const content = await fs.readFile(fullPath, 'utf-8');
-        // Also inline url() references in CSS
-        const cssDir = path.dirname(fullPath);
-        const inlinedCss = await replaceAsync(content, /url\(["']?([^"')]*\.(?:png|jpg|jpeg|gif|webp|svg|woff2?|ttf)[^"')]*)["']?\)/gi, async (_m, url) => {
-          if (/^https?:\/\//i.test(url) || /^data:/i.test(url)) return _m;
-          const urlPath = path.resolve(cssDir, url);
-          try {
-            const data = await fs.readFile(urlPath);
-            const mimeType = mime.getType(urlPath) || 'application/octet-stream';
-            return `url("data:${mimeType};base64,${data.toString('base64')}")`;
-          } catch { return _m; }
-        });
-        return `<style>${inlinedCss}</style>`;
-      } catch { return match; }
-    });
-
-    // Inline <img src="..."> → data URI
-    html = await replaceAsync(html, /<img\b([^>]*)\bsrc="([^"]*\.(?:png|jpg|jpeg|gif|webp|svg)[^"]*)"([^>]*)>/gi, async (match, before, src, after) => {
-      if (/^https?:\/\//i.test(src) || /^data:/i.test(src)) return match;
-      const fullPath = path.resolve(dir, src);
-      try {
-        const data = await fs.readFile(fullPath);
-        const mimeType = mime.getType(fullPath) || 'image/png';
-        return `<img${before}src="data:${mimeType};base64,${data.toString('base64')}"${after}>`;
-      } catch { return match; }
-    });
-
-    // Save to backgrounds dir
-    const bgDir = path.join(app.getPath('userData'), 'backgrounds');
-    await fs.mkdir(bgDir, { recursive: true });
-    const name = path.basename(filePath, path.extname(filePath)) + '_nora.html';
-    const dest = path.join(bgDir, name);
-    await fs.writeFile(dest, html, 'utf-8');
-    return dest;
-  } catch (err) {
-    logger.error('Failed to inline wallpaper', { filePath, err });
-    return null;
-  }
-}
-
-/** Async string.replace with async callback */
-async function replaceAsync(str: string, regex: RegExp, fn: (...args: string[]) => Promise<string>): Promise<string> {
-  const matches: { index: number; match: string; args: string[] }[] = [];
-  let m;
-  while ((m = regex.exec(str)) !== null) {
-    matches.push({ index: m.index, match: m[0], args: Array.from(m) });
-    if (!regex.global) break;
-  }
-  const results = await Promise.all(matches.map(m => fn(...m.args)));
-  let result = '';
-  let lastIndex = 0;
-  for (let i = 0; i < matches.length; i++) {
-    result += str.slice(lastIndex, matches[i].index);
-    result += results[i];
-    lastIndex = matches[i].index + matches[i].match.length;
-  }
-  result += str.slice(lastIndex);
-  return result;
-}
-
-export async function getWallpaperEngineWallpapers() {
-  try {
-    const { getWallpaperEngineWallpapers: scan } = await import(
-      './core/getWallpaperEngineWallpapers'
-    );
-    return await scan();
-  } catch (error) {
-    logger.error('Failed to scan Wallpaper Engine wallpapers', { error });
-    return {
-      wallpapers: [],
-      fatalError:
-        error instanceof Error
-          ? error.message
-          : 'Unknown error scanning Wallpaper Engine wallpapers',
-    } satisfies WallpaperEngineResult;
-  }
-}
 
 export async function getFolderLocation() {
   const folderPaths = await showOpenDialog({
@@ -1039,7 +872,9 @@ export function exitOsFullscreen() {
   mainWindow.setFullScreen(false);
 }
 
-export function isOsFullscreen() { return Boolean(mainWindow && mainWindow.isFullScreen()); }
+export function isOsFullscreen() {
+  return Boolean(mainWindow && mainWindow.isFullScreen());
+}
 
 function recordWindowState(state: WindowState) {
   logger.debug(`Window state changed`, { state });
@@ -1068,67 +903,13 @@ async function watchForSystemThemeChanges() {
   else logger.debug(`System theme changed`, { theme });
 }
 
-export async function changePlayerType(type: PlayerTypes) {
+export async function changePlayerType(_type: PlayerTypes) {
+  playerType = 'normal';
   if (mainWindow) {
-    logger.debug(`Changed player type.`, { type });
-    playerType = type;
-
-    const {
-      mainWindowHeight,
-      mainWindowWidth,
-      miniPlayerHeight,
-      miniPlayerWidth,
-      mainWindowX,
-      mainWindowY,
-      miniPlayerX,
-      miniPlayerY,
-      isMiniPlayerAlwaysOnTop
-    } = await getUserSettings();
-
-    if (type === 'mini') {
-      if (isOsFullscreen()) exitOsFullscreen();
-
-      mainWindow.setMaximumSize(MINI_PLAYER_MAX_SIZE_X, MINI_PLAYER_MAX_SIZE_Y);
-      mainWindow.setMinimumSize(MINI_PLAYER_MIN_SIZE_X, MINI_PLAYER_MIN_SIZE_Y);
-      mainWindow.setAlwaysOnTop(isMiniPlayerAlwaysOnTop);
-
-      if (miniPlayerWidth !== null && miniPlayerHeight !== null) {
-        mainWindow.setSize(miniPlayerWidth, miniPlayerHeight, true);
-      } else mainWindow.setSize(MINI_PLAYER_MIN_SIZE_X, MINI_PLAYER_MIN_SIZE_Y, true);
-
-      if (miniPlayerX !== null && miniPlayerY !== null) {
-        mainWindow.setPosition(miniPlayerX, miniPlayerY, true);
-      } else {
-        mainWindow.center();
-        const [x, y] = mainWindow.getPosition();
-        await saveUserSettings({ miniPlayerX: x, miniPlayerY: y });
-      }
-      mainWindow.setAspectRatio(MINI_PLAYER_ASPECT_RATIO);
-    } else if (type === 'normal') {
-      const wasFullscreen = isOsFullscreen();
-      if (wasFullscreen) exitOsFullscreen();
-      mainWindow.setMaximumSize(MAIN_WINDOW_MAX_SIZE_X, MAIN_WINDOW_MAX_SIZE_Y);
-      mainWindow.setMinimumSize(MAIN_WINDOW_MIN_SIZE_X, MAIN_WINDOW_MIN_SIZE_Y);
-      mainWindow.setAlwaysOnTop(false);
-      if (!wasFullscreen) {
-        if (mainWindowWidth !== null && mainWindowHeight !== null) {
-          mainWindow.setSize(mainWindowWidth, mainWindowHeight, true);
-        } else mainWindow.setSize(MAIN_WINDOW_DEFAULT_SIZE_X, MAIN_WINDOW_DEFAULT_SIZE_Y, true);
-
-        if (mainWindowX !== null && mainWindowY !== null) {
-          mainWindow.setPosition(mainWindowX, mainWindowY, true);
-        } else {
-          mainWindow.center();
-          const [x, y] = mainWindow.getPosition();
-          await saveUserSettings({ mainWindowX: x, mainWindowY: y });
-        }
-      }
-      mainWindow.setAspectRatio(MAIN_WINDOW_ASPECT_RATIO);
-    } else {
-      mainWindow.setMaximumSize(MAIN_WINDOW_MAX_SIZE_X, MAIN_WINDOW_MAX_SIZE_Y);
-      mainWindow.setMinimumSize(MAIN_WINDOW_MIN_SIZE_X, MAIN_WINDOW_MIN_SIZE_Y);
-      enterOsFullscreen();
-    }
+    mainWindow.setMaximumSize(MAIN_WINDOW_MAX_SIZE_X, MAIN_WINDOW_MAX_SIZE_Y);
+    mainWindow.setMinimumSize(MAIN_WINDOW_MIN_SIZE_X, MAIN_WINDOW_MIN_SIZE_Y);
+    mainWindow.setAlwaysOnTop(false);
+    mainWindow.setAspectRatio(MAIN_WINDOW_ASPECT_RATIO);
   }
 }
 
@@ -1156,7 +937,7 @@ export async function toggleAutoLaunch(autoLaunchState: boolean) {
 
   app.setLoginItemSettings({
     openAtLogin: autoLaunchState,
-    name: 'Nora',
+    name: 'Volo',
     openAsHidden: openWindowAsHiddenOnSystemStart
   });
 

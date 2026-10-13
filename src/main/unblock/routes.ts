@@ -1,11 +1,12 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { getKuwoSongUrl } from './kuwo';
+
+import logger from '../logger';
 import { getBodianSongUrl } from './bodian';
-import { getGequbaoSongUrl } from './gequbao';
 import { getGdStudioSongUrl } from './gdstudio';
+import { getGequbaoSongUrl } from './gequbao';
+import { getKuwoSongUrl } from './kuwo';
 import { searchThirdParty } from './search';
 import type { SongMatchInfo } from './types';
-import logger from '../logger';
 
 function buildMatchInfo(query: URLSearchParams): SongMatchInfo {
   let songName = query.get('songName') || '';
@@ -27,7 +28,7 @@ function buildMatchInfo(query: URLSearchParams): SongMatchInfo {
     keyword,
     songName,
     artist,
-    durationMs: Number.isFinite(durationMs) && durationMs > 0 ? durationMs : undefined,
+    durationMs: Number.isFinite(durationMs) && durationMs > 0 ? durationMs : undefined
   };
 }
 
@@ -50,9 +51,15 @@ function withRouteTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
   return new Promise((resolve) => {
     const t = setTimeout(() => resolve(null), ms);
     p.then(
-      (v) => { clearTimeout(t); resolve(v); },
-      () => { clearTimeout(t); resolve(null); },
-    );
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      () => {
+        clearTimeout(t);
+        resolve(null);
+      }
+    ).catch(() => resolve(null));
   });
 }
 
@@ -60,7 +67,7 @@ export async function handleUnblockRoute(
   pathname: string,
   searchParams: URLSearchParams,
   _req: IncomingMessage,
-  res: ServerResponse,
+  res: ServerResponse
 ): Promise<boolean> {
   if (!pathname.startsWith('/api/unblock/')) return false;
 
@@ -71,17 +78,17 @@ export async function handleUnblockRoute(
     // ★ 第三方搜索兜底：网易云空结果 / 全不可播时返回歌曲宝+酷我候选列表
     if (provider === 'search') {
       const keyword = searchParams.get('keyword') || '';
-      const items =
-        (await withRouteTimeout(searchThirdParty(keyword), GEQUBAO_TIMEOUT_MS)) ?? [];
+      const items = (await withRouteTimeout(searchThirdParty(keyword), GEQUBAO_TIMEOUT_MS)) ?? [];
       sendJson(res, { code: 200, items });
       return true;
     }
 
     if (provider === 'gd' || provider === 'netease') {
       const id = searchParams.get('id') || '';
-      const result =
-        (await withRouteTimeout(getGdStudioSongUrl(id), UNBLOCK_TIMEOUT_MS)) ??
-        { code: 408, url: null };
+      const result = (await withRouteTimeout(getGdStudioSongUrl(id), UNBLOCK_TIMEOUT_MS)) ?? {
+        code: 408,
+        url: null
+      };
       sendJson(res, result);
       return true;
     }
@@ -90,10 +97,18 @@ export async function handleUnblockRoute(
     let result: { code: number; url: string | null } | null;
 
     switch (provider) {
-      case 'kuwo': result = await withRouteTimeout(getKuwoSongUrl(match), UNBLOCK_TIMEOUT_MS); break;
-      case 'bodian': result = await withRouteTimeout(getBodianSongUrl(match), UNBLOCK_TIMEOUT_MS); break;
-      case 'gequbao': result = await withRouteTimeout(getGequbaoSongUrl(match), GEQUBAO_TIMEOUT_MS); break;
-      default: sendJson(res, { code: 404, url: null }); return true;
+      case 'kuwo':
+        result = await withRouteTimeout(getKuwoSongUrl(match), UNBLOCK_TIMEOUT_MS);
+        break;
+      case 'bodian':
+        result = await withRouteTimeout(getBodianSongUrl(match), UNBLOCK_TIMEOUT_MS);
+        break;
+      case 'gequbao':
+        result = await withRouteTimeout(getGequbaoSongUrl(match), GEQUBAO_TIMEOUT_MS);
+        break;
+      default:
+        sendJson(res, { code: 404, url: null });
+        return true;
     }
 
     sendJson(res, result ?? { code: 408, url: null });

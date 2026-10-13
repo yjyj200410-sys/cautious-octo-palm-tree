@@ -237,6 +237,7 @@ export class StemSeparation {
         node.port.close();
         if (this.destination) this.source?.connect(this.destination);
         this.node = null;
+        this.releaseMixer();
         this.mixerPromise = null;
         void window.api.stemSeparation.setEnabled(false).catch(() => {});
       };
@@ -248,6 +249,16 @@ export class StemSeparation {
       this.sendMix();
     })();
     return this.mixerPromise;
+  }
+  private releaseMixer() {
+    if (!this.node) return;
+    this.source?.disconnect();
+    this.node.port.onmessage = null;
+    this.node.port.close();
+    this.node.disconnect();
+    this.node = null;
+    this.mixerPromise = null;
+    if (this.source && this.destination) this.source.connect(this.destination);
   }
   async setEnabled(enabled: boolean) {
     const generation = ++this.generation;
@@ -267,6 +278,7 @@ export class StemSeparation {
       if (enabled && this.currentTrack)
         void window.api.stemSeparation.setCurrent(this.currentTrack);
       this.onEnabledChange?.(enabled);
+      if (!enabled) this.releaseMixer();
     } catch (error) {
       if (generation !== this.generation || this.destroyed) return;
       this.runtimeReady = false;

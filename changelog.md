@@ -1,8 +1,18 @@
 # Change Log
 
+## Volo v1.0.0 — 2026-10-13
+
+- 将播放器收敛为静态磁带机界面，统一浅色和深色主题；保留本地曲库、网易云登录与搜索、收藏、推荐、队列、歌词及按需音频分轨。
+- 移除壁纸与视频背景、整窗玻璃效果、独立迷你窗口、桌面歌词、社交集成及相关依赖。
+- 曲库和队列按需读取并使用虚拟列表；数据库空闲后关闭。分轨模型只在启用时加载，缓存上限为 512 MiB。
+- 保留 `%APPDATA%/lumina` 数据路径以兼容现有曲库与设置；Windows 默认采用软件渲染。
+- 已通过自动测试与类型检查，并完成 Windows x64 安装包构建。真实账号授权、完整曲库迁移和长时间播放仍需在目标环境验收。
+
+以下为上游 Nora Player 的历史更新记录，供溯源参考。
+
 > [!TIP]
 >
-> ### The latest version, **( v3.1.0-stable )** contains a lot of new features and improvements. As always expect some bugs in the app.
+> ### Nora Player v3.1.0-stable 是上游历史版本，不是当前 Volo 版本。
 
 <br>
 

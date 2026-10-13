@@ -6,13 +6,14 @@ icon: ./build/icon.ico
 artifactName: '${productName} v${version}-${os}-${arch}.${ext}'
 
 extraMetadata:
-  description: Volo — 自由跃动的音乐播放器
+  description: Volo — 专注听音乐的轻量磁带播放器
 
 directories:
   buildResources: build
 
 files:
   - 'out/**'
+  - '!out/**/*.map'
   - 'resources/**'
   - 'package.json'
   - 'LICENSE.txt'
@@ -46,8 +47,6 @@ asarUnpack:
 extraResources:
   - from: resources/coloros-mss
     to: coloros-mss
-  - from: out/builtin-wallpapers
-    to: builtin-wallpapers
   # Drizzle migrations — must be complete (sql + meta/_journal.json)
   - from: resources/drizzle
     to: drizzle
@@ -90,6 +89,7 @@ win:
   # Platform files replace the global filters; retain the global exclusions here.
   files:
     - 'out/**'
+    - '!out/**/*.map'
     - 'resources/**'
     - 'package.json'
     - 'LICENSE.txt'

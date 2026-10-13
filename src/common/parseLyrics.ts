@@ -1,7 +1,4 @@
 import detectChinese from '@neos21/detect-chinese';
-import Kuroshiro from '@sglkc/kuroshiro';
-import { pinyin } from 'pinyin-pro';
-import isHangul from 'romaja/src/hangul/isHangul.js';
 
 // import logger from '../main/logger';
 import isLyricsSynced, {
@@ -256,7 +253,7 @@ const getPrecentageJP = (str: string) => {
   if (!str) return 0;
   let count = 0;
   for (const c of str) {
-    if (Kuroshiro.Util.isJapanese(c)) count++;
+    if (/[\u3040-\u30ff\u3400-\u9fff]/u.test(c)) count++;
   }
   return count / str.length;
 };
@@ -267,7 +264,7 @@ const getPrecentageCN = (str: string) => {
   if (detection.language === 'cn') return 1;
   let count = 0;
   for (let i = 0; i < str.length; i++) {
-    if (pinyin(str[i]) != str[i]) count++;
+    if (/\p{Script=Han}/u.test(str[i])) count++;
   }
   return count / str.length;
 };
@@ -277,7 +274,7 @@ const getPrecentageKR = (str: string) => {
   str = str.replaceAll(' ', '');
   let count = 0;
   for (const c of str) {
-    if (isHangul(c)) count++;
+    if (/\p{Script=Hangul}/u.test(c)) count++;
   }
   return count / str.length;
 };

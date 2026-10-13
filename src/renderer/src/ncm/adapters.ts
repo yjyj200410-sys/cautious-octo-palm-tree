@@ -4,14 +4,7 @@
  * 所有函数签名：接收 NetEase API 原始返回，输出 Ncm* 类型。
  */
 
-import type {
-  NcmSong,
-  NcmPlaylist,
-  NcmAlbum,
-  NcmArtist,
-  NcmSearchResult,
-  NcmLyric,
-} from './types';
+import type { NcmSong, NcmPlaylist, NcmAlbum, NcmArtist, NcmSearchResult, NcmLyric } from './types';
 
 // ---- 工具函数 ----
 
@@ -19,7 +12,7 @@ const nid = (id: number) => -id;
 export const coverToArtwork = (url: string) => ({
   isDefaultArtwork: !url,
   artworkPath: url || '',
-  optimizedArtworkPath: url || '',
+  optimizedArtworkPath: url || ''
 });
 
 // ---- Song ----
@@ -61,11 +54,14 @@ export function adaptSong(raw: Record<string, unknown>, songUrl?: string | null)
     ncmId: id,
     // 阶段 4.2:歌单「添加时间」排序——保留歌单详情接口每曲的 at 字段(毫秒时间戳)。
     // 非歌单详情来源(搜索/歌曲详情/专辑)无 at,保持 undefined,排序时按缺失处理。
-    addedAt: (raw.at as number) || undefined,
+    addedAt: (raw.at as number) || undefined
   };
 }
 
-export function adaptSongs(rawSongs: Record<string, unknown>[], songUrls?: (string | null)[]): NcmSong[] {
+export function adaptSongs(
+  rawSongs: Record<string, unknown>[],
+  songUrls?: (string | null)[]
+): NcmSong[] {
   return rawSongs.map((s, i) => adaptSong(s, songUrls?.[i] ?? null));
 }
 
@@ -89,7 +85,7 @@ export function adaptPlaylist(raw: Record<string, unknown>): NcmPlaylist {
     creatorId: Number((playlist.creator as Record<string, unknown>)?.userId) || 0,
     trackCount: (playlist.trackCount as number) || tracks.length,
     description: (playlist.description as string) || '',
-    copywriter: (playlist.copywriter as string) || '',
+    copywriter: (playlist.copywriter as string) || ''
   };
 }
 
@@ -111,7 +107,7 @@ export function adaptPlaylistList(raw: Record<string, unknown>): NcmPlaylist[] {
     creatorName: ((pl.creator as Record<string, unknown>)?.nickname as string) || '',
     creatorId: Number((pl.creator as Record<string, unknown>)?.userId) || 0,
     description: (pl.description as string) || '',
-    copywriter: (pl.copywriter as string) || '',
+    copywriter: (pl.copywriter as string) || ''
   }));
 }
 
@@ -121,14 +117,14 @@ export function adaptAlbum(raw: Record<string, unknown>): NcmAlbum {
   const album = raw.album as Record<string, unknown> | undefined;
   if (!album) throw new Error('Missing album in response');
   const tracks: NcmSong[] = adaptSongs(
-    ((raw.songs || album.songs || []) as Record<string, unknown>[])
+    (raw.songs || album.songs || []) as Record<string, unknown>[]
   );
   return {
     albumId: nid(album.id as number),
     title: (album.name as string) || '',
     artists: ((album.artists || album.ar || []) as { id: number; name: string }[]).map((a) => ({
       name: a.name,
-      artistId: nid(a.id),
+      artistId: nid(a.id)
     })),
     songs: tracks.map((t) => ({ title: t.title, songId: t.songId })),
     year: (album.publishTime as number) ? new Date(album.publishTime as number).getFullYear() : 0,
@@ -137,7 +133,7 @@ export function adaptAlbum(raw: Record<string, unknown>): NcmAlbum {
     coverUrl: (album.picUrl as string) || '',
     tracks,
     description: (album.description as string) || '',
-    trackCount: (album.size as number) || (album.trackCount as number) || tracks.length,
+    trackCount: (album.size as number) || (album.trackCount as number) || tracks.length
   };
 }
 
@@ -154,17 +150,20 @@ export function adaptArtist(raw: Record<string, unknown>): NcmArtist {
     isAFavorite: false,
     artworkPaths: coverToArtwork((artist.picUrl as string) || ''),
     coverUrl: (artist.picUrl as string) || '',
-    briefDesc: (artist.briefDesc as string) || '',
+    briefDesc: (artist.briefDesc as string) || ''
   };
 }
 
-export function adaptArtistSongs(raw: Record<string, unknown>): { artist: NcmArtist; songs: NcmSong[] } {
+export function adaptArtistSongs(raw: Record<string, unknown>): {
+  artist: NcmArtist;
+  songs: NcmSong[];
+} {
   const data = raw.data as Record<string, unknown> | undefined;
   const artistData = (raw.artist || data?.artist || {}) as Record<string, unknown>;
   const songs = adaptSongs((raw.songs || raw.hotSongs || []) as Record<string, unknown>[]);
   return {
     artist: adaptArtist({ artist: artistData }),
-    songs,
+    songs
   };
 }
 
@@ -172,35 +171,19 @@ export function adaptArtistSongs(raw: Record<string, unknown>): { artist: NcmArt
 
 export function adaptSearchResult(raw: Record<string, unknown>): NcmSearchResult {
   const result = (raw.result || raw) as Record<string, unknown>;
-  const songs = ((result.songs || []) as Record<string, unknown>[]);
-  const albums = ((result.albums || []) as Record<string, unknown>[]);
-  const artists = ((result.artists || []) as Record<string, unknown>[]);
-  const playlists = ((result.playlists || []) as Record<string, unknown>[]);
+  const songs = (result.songs || []) as Record<string, unknown>[];
+  const albums = (result.albums || []) as Record<string, unknown>[];
+  const artists = (result.artists || []) as Record<string, unknown>[];
+  const playlists = (result.playlists || []) as Record<string, unknown>[];
   return {
     songs: adaptSongs(songs),
     songCount: (result.songCount as number) || songs.length,
-    playlists: playlists.map((pl: Record<string, unknown>) => ({
-      playlistId: nid(pl.id as number),
-      name: (pl.name as string) || '',
-      coverImgUrl: (pl.coverImgUrl as string) || (pl.picUrl as string) || '',
-      trackCount: (pl.trackCount as number) || 0,
-    })),
+    playlists: adaptPlaylistList({ playlist: playlists }),
     playlistCount: (result.playlistCount as number) || playlists.length,
-    albums: albums.map((a: Record<string, unknown>) => ({
-      albumId: nid(a.id as number),
-      name: (a.name as string) || '',
-      picUrl: (a.picUrl as string) || (a.coverImgUrl as string) || '',
-      artist: a.artist || (a.artists as any[])?.[0],
-      artists: a.artists,
-      size: (a.size as number) || 0,
-    })),
+    albums: albums.map((album) => adaptAlbum({ album })),
     albumCount: (result.albumCount as number) || albums.length,
-    artists: artists.map((a: Record<string, unknown>) => ({
-      id: a.id as number,
-      name: (a.name as string) || '',
-      picUrl: (a.picUrl as string) || (a.img1v1Url as string) || '',
-    })),
-    artistCount: (result.artistCount as number) || artists.length,
+    artists: artists.map((artist) => adaptArtist({ artist })),
+    artistCount: (result.artistCount as number) || artists.length
   };
 }
 
@@ -211,6 +194,6 @@ export function adaptLyric(raw: Record<string, unknown>): NcmLyric {
   const tlyricObj = raw.tlyric as Record<string, unknown> | undefined;
   return {
     lyric: (lrc?.lyric as string) || (raw.lyric as string) || '',
-    tlyric: (tlyricObj?.lyric as string) || (raw.tlyric as string) || '',
+    tlyric: (tlyricObj?.lyric as string) || (raw.tlyric as string) || ''
   };
 }

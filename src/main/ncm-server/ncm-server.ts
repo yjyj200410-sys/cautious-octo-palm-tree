@@ -1,9 +1,11 @@
-import { createServer, type IncomingMessage, type ServerResponse } from 'http';
-import { net } from 'electron';
 import { existsSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
+import { createServer, type IncomingMessage, type ServerResponse } from 'http';
 import { tmpdir } from 'os';
+import { resolve } from 'path';
 import { URL } from 'url';
+
+import { net } from 'electron';
+
 import logger from '../logger';
 import { handleUnblockRoute } from '../unblock/routes';
 
@@ -15,15 +17,30 @@ if (!existsSync(anonymousTokenPath)) {
   writeFileSync(anonymousTokenPath, '');
 }
 
-import NeteaseCloudMusicApi from '@neteasecloudmusicapienhanced/api';
-// @ts-expect-error - no types for subpath modules
-import generateConfig from '@neteasecloudmusicapienhanced/api/generateConfig.js';
-// @ts-expect-error - no types for subpath modules
-import ncmServerExports from '@neteasecloudmusicapienhanced/api/server.js';
-
+type ApiFunction = (query: Record<string, unknown>) => Promise<unknown>;
+let NeteaseCloudMusicApi: Record<string, unknown> = {};
+let generateConfig: (() => Promise<void>) | undefined;
+let modulePromise: Promise<void> | null = null;
+const NON_API_EXPORTS = new Set<string>();
+async function loadApi() {
+  if (!modulePromise)
+    modulePromise = Promise.all([
+      import('@neteasecloudmusicapienhanced/api'),
+      // @ts-expect-error - the API package has no server module declaration
+      import('@neteasecloudmusicapienhanced/api/server.js')
+    ])
+      .then(([api, server]) => {
+        NeteaseCloudMusicApi = api.default as unknown as Record<string, unknown>;
+        generateConfig = server.generateConfig;
+        Object.keys(server).forEach((key) => NON_API_EXPORTS.add(key));
+      })
+      .catch((error) => {
+        modulePromise = null;
+        throw error;
+      });
+  await modulePromise;
+}
 const port = Number(process.env.NCM_SERVER_PORT || 25884);
-
-const NON_API_EXPORTS = new Set(Object.keys(ncmServerExports));
 
 // ★ NCM API 硬超时：@neteasecloudmusicapienhanced/api 的 option.js 默认
 //   `timeout: query.timeout || 0`（0 = 无超时）。对端连接停滞时 axios 会永久挂起，
@@ -40,16 +57,18 @@ const NCM_API_TIMEOUT_MS = 10_000;
 function withApiTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`NCM API timeout after ${ms}ms`)), ms);
-    promise.then(
-      (v) => {
-        clearTimeout(timer);
-        resolve(v);
-      },
-      (e) => {
-        clearTimeout(timer);
-        reject(e);
-      },
-    );
+    promise
+      .then(
+        (v) => {
+          clearTimeout(timer);
+          resolve(v);
+        },
+        (e) => {
+          clearTimeout(timer);
+          reject(e);
+        }
+      )
+      .catch(reject);
   });
 }
 
@@ -57,14 +76,17 @@ function withApiTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 let configPromise: Promise<void> | null = null;
 
 async function ensureNcmConfig() {
+  await loadApi();
   if (!generateConfig) return;
   if (!configPromise) {
-    configPromise = generateConfig().then(() => {
-      logger.info('NCM config initialized');
-    }).catch((err: unknown) => {
-      configPromise = null;
-      logger.error('NCM config init failed:', { err });
-    });
+    configPromise = generateConfig()
+      .then(() => {
+        logger.info('NCM config initialized');
+      })
+      .catch((err: unknown) => {
+        configPromise = null;
+        logger.error('NCM config init failed:', { err });
+      });
   }
   await configPromise;
 }
@@ -74,13 +96,14 @@ function pathCase(str: string): string {
   return str.replace(/_/g, '/');
 }
 
-function findRouter(requestPath: string): [string, Function] | null {
+async function findRouter(requestPath: string): Promise<[string, ApiFunction] | null> {
+  await loadApi();
   for (const key of Object.keys(NeteaseCloudMusicApi)) {
     if (NON_API_EXPORTS.has(key)) continue;
     const fn = (NeteaseCloudMusicApi as Record<string, unknown>)[key];
     if (typeof fn !== 'function') continue;
     if (pathCase(key) === requestPath || key === requestPath) {
-      return [key, fn as Function];
+      return [key, fn as ApiFunction];
     }
   }
   return null;
@@ -107,7 +130,7 @@ function sendJSON(res: ServerResponse, status: number, data: unknown) {
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Cookie',
-    'Cross-Origin-Resource-Policy': 'cross-origin',
+    'Cross-Origin-Resource-Policy': 'cross-origin'
   });
   res.end(JSON.stringify(data));
 }
@@ -120,7 +143,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Cookie',
-      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
     });
     res.end();
     return;
@@ -153,7 +176,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         'Content-Type': ct,
         'Cache-Control': 'public, max-age=3600',
         'Access-Control-Allow-Origin': '*',
-        'Cross-Origin-Resource-Policy': 'cross-origin',
+        'Cross-Origin-Resource-Policy': 'cross-origin'
       });
       res.end(buffer);
     } catch (err) {
@@ -168,10 +191,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   if (pathname === '/health') {
     return sendJSON(res, 200, {
       status: 'ok',
-      service: 'nora-ncm-server',
+      service: 'volo-ncm-server',
       version: '1.0.0',
       neteaseApiLoaded: Object.keys(NeteaseCloudMusicApi).length > 0,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     });
   }
 
@@ -184,10 +207,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   // ---- /netease (索引页) ----
   if (pathname === '/netease') {
     return sendJSON(res, 200, {
-      name: 'Nora NCM Proxy',
+      name: 'Volo NCM Proxy',
       description: '网易云音乐 API 代理',
       url: '/netease/*',
-      health: '/health',
+      health: '/health'
     });
   }
 
@@ -195,7 +218,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   const neteaseMatch = pathname.match(/^\/netease\/(.+)/);
   if (neteaseMatch) {
     const requestPath = neteaseMatch[1];
-    const match = findRouter(requestPath);
+    const match = await findRouter(requestPath);
 
     if (!match) {
       return sendJSON(res, 404, { error: `API not found: ${requestPath}` });
@@ -214,7 +237,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         apiFn({
           ...query,
           cookie: cookies,
-          timeout: NCM_API_TIMEOUT_MS,
+          timeout: NCM_API_TIMEOUT_MS
         }),
         NCM_API_TIMEOUT_MS
       )) as Record<string, unknown>;
@@ -224,7 +247,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
       logger.error(`NCM ✗ ${requestPath}: ${msg}`);
       const errorObj = err as { status?: number; body?: unknown; message?: string };
       return sendJSON(res, errorObj.status || 500, {
-        error: errorObj.body || errorObj.message || 'Internal Server Error',
+        error: errorObj.body || errorObj.message || 'Internal Server Error'
       });
     }
   }
@@ -240,7 +263,7 @@ export async function callNcmApi(
   query: Record<string, string> = {},
   cookieString = ''
 ): Promise<unknown> {
-  const match = findRouter(requestPath);
+  const match = await findRouter(requestPath);
   if (!match) {
     throw new Error(`API not found: ${requestPath}`);
   }
@@ -271,7 +294,7 @@ export async function callNcmApi(
 // ---- 启动服务器 ----
 export async function startNcmServer() {
   // 启动时初始化配置（不阻塞服务器启动）
-  ensureNcmConfig().catch(() => {});
+  // API modules and anonymous configuration load only on the first online request.
 
   const server = createServer(handleRequest);
 
