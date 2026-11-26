@@ -4,12 +4,12 @@ Doto 的独立 Android 原生音乐播放器，使用 Java 和 Android 原生组
 
 ## 应用截图
 
-<img src="https://github.com/yjyj200410-sys/cautious-octo-palm-tree/releases/download/v0.1-prototype/discover.jpg" alt="发现页" width="180">
-<img src="https://github.com/yjyj200410-sys/cautious-octo-palm-tree/releases/download/v0.1-prototype/now-playing.jpg" alt="播放页" width="180">
-<img src="https://github.com/yjyj200410-sys/cautious-octo-palm-tree/releases/download/v0.1-prototype/portrait-lyrics.jpg" alt="竖屏歌词" width="180">
-<img src="https://github.com/yjyj200410-sys/cautious-octo-palm-tree/releases/download/v0.1-prototype/playback-effects.jpg" alt="播放效果" width="180">
+<img src="screenshots/discover.jpg" alt="发现页" width="180">
+<img src="screenshots/now-playing.jpg" alt="播放页" width="180">
+<img src="screenshots/portrait-lyrics.jpg" alt="竖屏歌词" width="180">
+<img src="screenshots/playback-effects.jpg" alt="播放效果" width="180">
 
-<img src="https://github.com/yjyj200410-sys/cautious-octo-palm-tree/releases/download/v0.1-prototype/landscape-lyrics.jpg" alt="横屏歌词" width="760">
+<img src="screenshots/landscape-lyrics.jpg" alt="横屏歌词" width="760">
 
 ## 构建
 
