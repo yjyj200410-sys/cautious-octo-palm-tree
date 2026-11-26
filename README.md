@@ -1,48 +1,15 @@
-# Doto
+# Doto Android
 
-专注听音乐的桌面播放器。曲库与独立磁带机播放页分开，采用暖灰机身、透明塑料磁带、陶土橙主键及统一的浅色与深色界面。
+Doto 的独立 Android 原生音乐播放器，使用 Java 和 Android 原生组件。项目包含本地曲库、播放队列、歌词、在线音乐入口和端侧音频分轨源码。
 
-播放页使用生成的静态机身材质与透明磁带壳；歌曲封面裁切为整张磁带标签，转轮只在真实播放且页面可见时运行。分轨推子与音量等大，左端纯人声、右端纯伴奏，中间还原混合；无背光 LCD 风格歌词窗位于观察窗下方，进度条在机身底端。图标按键保留文字工具提示、键盘焦点与屏幕阅读器名称。
+## 构建
 
-磁带动画可在设置中关闭，也遵循系统减少动态效果设置。切页共用原有播放器，曲库的搜索、筛选及滚动位置保留。完整歌词和队列按需打开。
-
-保留网易云登录与账号切换、喜欢的音乐、每日/游客推荐、本地曲库、音乐搜索和按需音频分轨。播放区支持队列、进度、音量、随机/循环、媒体键、托盘和可展开的普通歌词。
-
-WE/网页/视频背景、整窗磨砂玻璃、动态取色、沉浸播放器、独立迷你窗口、桌面歌词、歌词翻译/注音、字体中心和社交集成已从运行链路移除。
-
-## 运行与构建
-
-当前验证环境：Windows x64、Node.js 24、npm 11、Electron 41。
+安装 Android SDK，在项目根目录运行：
 
 ```powershell
-npm ci
-npm run dev
+.\gradlew.bat :app:assembleDebug
 ```
 
-```powershell
-npm run typecheck
-npm run test
-npm run lint
-npm run build:win-x64
-```
+APK 输出到 `app/build/outputs/apk/debug/`。可通过 `ANDROID_HOME` 或本机的 `local.properties` 配置 SDK 路径。
 
-构建前会检查 FFmpeg 是否可运行以及分轨模型的 SHA-256，避免把缺失或截断的二进制打进安装包。如 FFmpeg 下载失败，按 [ffmpeg-static 的说明](https://github.com/eugeneware/ffmpeg-static#custom-binaries-url)设置下载源后重新安装完整二进制；仅有文件名或 `MZ` 文件头不代表文件完整。
-
-Windows 默认使用软件渲染，静态播放器不需要 GPU 特效。驱动兼容性排查时可在启动前设置 `VOLO_HARDWARE_ACCELERATION=1`。开发工具仅在 `VOLO_DEVTOOLS=1` 时自动打开。
-
-## 数据与资源
-
-- 更名后继续使用 `%APPDATA%/lumina`，保留现有歌曲 ID、曲库、收藏、账号与设置。内部兼容路径及 `nora:` 音频协议不代表产品名称。
-- 首次进入轻量界面会备份旧前端偏好并停用背景与自动歌词转换；不删除用户音乐、原有壁纸文件或歌单数据。
-- 本地曲库与队列使用虚拟列表，可见区域按批次读取元数据。曲库数据库在空闲后关闭并落盘，下次操作时重新打开。
-- 普通播放不加载分轨模型。分轨只准备当前歌曲，关闭时停止 Worker、释放混音节点、恢复原始立体声音源。整曲缓存含临时写入在内限制为 512 MiB；过长曲目可继续实时分轨。
-- 输出设备选择持久化，设备不可用时回退到系统默认。
-- `VOLO_USER_DATA` 仅供隔离测试指定数据目录。性能与回归测试应使用独立目录，不能把生成的假曲目写入日常曲库。
-
-分轨推理与初次扫描曲库会产生额外负载。当前实测与验收结果见本次交付的测试报告，不能把静置占用当作全部操作的峰值。
-
-## 来源与许可
-
-Doto 基于 [Nora Player](https://github.com/Sandakan/Nora)，保留原作者 Sandakan Nipunajith 的 MIT 许可与版权声明。依赖许可见 `open_source_licenses.txt`；模型与 FFmpeg 的许可随相应资源分发。
-
-创意组件调研参考 Animata、Magic UI 和 Radix 官方示例。正式界面的 CSS 为本项目实现，未复制付费组件或引入新的动画库。磁带与 CD 的对比原型作为设计交付保留，正式播放器只维护磁带布局。机壳与透明塑料壳素材由 imagegen 根据本项目确认的效果图生成，来源及体积见 `src/renderer/src/assets/tape/README.md`。
+分轨所需模型单独提供。持有可用模型时，运行 `node scripts/prepare-assets.mjs <模型文件路径>`，脚本会校验 SHA-256 并准备分轨模型及合成测试音频。

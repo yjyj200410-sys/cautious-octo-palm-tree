@@ -1,19 +1,9 @@
-node_modules
-dist
-out
-.DS_Store
-*.log*
-.env
-thunder-tests
-coverage/
-*.m3u
-.npmrc
-.github/plans/
+.gradle/
+local.properties
+**/build/
+app/src/main/assets/model.onnx
+app/src/main/assets/benchmark.wav
+validation/*.wav
+validation/desktop.cjs
 
-.codex-artifacts/
-.claude/
-.agents/
-tasks/
-.tanstack/
-*.tsbuildinfo
-electron.vite.config.*.mjs
+validation/*.png

@@ -1,9 +1,0 @@
-.gradle/
-local.properties
-**/build/
-app/src/main/assets/model.onnx
-app/src/main/assets/benchmark.wav
-validation/*.wav
-validation/desktop.cjs
-
-validation/*.png
