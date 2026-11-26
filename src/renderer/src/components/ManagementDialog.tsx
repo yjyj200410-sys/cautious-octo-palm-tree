@@ -20,7 +20,7 @@ export default function ManagementDialog({
       open={open}
       unmount={false}
       onClose={onClose}
-      className="management-dialog fixed inset-0 z-[70]"
+      className="management-dialog fixed inset-0 z-[300]"
       aria-label={label}
     >
       <DialogBackdrop

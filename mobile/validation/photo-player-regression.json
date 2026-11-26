@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "api": 36,
+  "display": [
+    1264,
+    2780
+  ],
+  "build": "assembleDebug / assembleDebugAndroidTest / lintDebug passed",
+  "photo_suite": {
+    "checks": 78,
+    "result": "PASS",
+    "instrumentation_code": -1
+  },
+  "service_suite": {
+    "checks": 39,
+    "result": "PASS",
+    "instrumentation_code": -1
+  },
+  "elastic": {
+    "max_items_per_second": 24,
+    "max_pull_design_units": 220,
+    "direction": "downward pull scrolls list upward",
+    "held_pull": "continues at fixed velocity",
+    "release": "snap nearest and commit",
+    "cancel": "restore current",
+    "preview": "original audio uninterrupted"
+  },
+  "visual": "native rendered screenshots inspected; six reference geometry/color samples passed; actual content differs from sample art",
+  "latest_changes": [
+    "album entry removed",
+    "top handle shifted left",
+    "blank-space pull follows native touch displacement; rebound/collapse validated",
+    "five-item capsule with alpha fade mask",
+    "gyro-fused rotation sensor registered; controlled pitch/roll validates perspective and dynamic shadow"
+  ],
+  "motion_validation": "Device sensor registration and controlled orientation input tested; actual handheld feel requires user experience.",
+  "card_motion": {
+    "max_degrees": 45,
+    "horizontal_direction": "reversed",
+    "scale": "physical angle counter tilt",
+    "stillness_ms": 500,
+    "restoration": "smooth and rebase to new resting pose",
+    "verified": "controlled native rendered orientation input, timing, restart, limits, restoration without new samples",
+    "return_duration_ms": 900,
+    "vertical_shadow": "opposite pitch: -tiltX * 3",
+    "perspective_strength": 1.2,
+    "motion_dead_zone_degrees": 1.2
+  },
+  "capsule_gesture": {
+    "toggle": "right swipe hides, left swipe expands; tap does not toggle",
+    "drag_design_units": 220,
+    "hidden_card_scale": 1.08,
+    "hidden_card_center_x": 465.5,
+    "overdrag_max_design_units": 60,
+    "curve": [
+      0.22,
+      1,
+      0.36,
+      1
+    ],
+    "verified": "native follow/settle, cancellation, mid-animation reversal, both boundary overpulls, hidden hit region, card geometry",
+    "sensitivity_change": "27% greater response than the prior 280-unit range",
+    "left_overpull_capsule_ratio": 0.6,
+    "hit_target": "tracks rendered horizontal offset"
+  },
+  "page_dismiss": {
+    "top_button": false,
+    "distance_fraction": 0.08,
+    "fling_dp_per_second": 500,
+    "minimum_fling_slop_multiple": 1.5,
+    "duration_ms": 280,
+    "velocity_space": "screen",
+    "verified": "short distance dismissal, rebound, cancellation, removed top control and system back"
+  },
+  "latest_verification": {
+    "scope": "angle limit and perspective parameters only",
+    "checks": [
+      "assembleDebug passed",
+      "source parameters checked",
+      "installed on PKR110"
+    ],
+    "full_suite_rerun": false
+  }
+}

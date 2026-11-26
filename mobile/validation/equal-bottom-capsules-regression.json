@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-14",
+  "installed": true,
+  "separateCapsules": true,
+  "designSize": [
+    370,
+    180
+  ],
+  "leftOuterMargin": 84,
+  "rightOuterMargin": 84,
+  "visual": "equal-bottom-capsules.png",
+  "suites": {
+    "rubber-navigation": 19,
+    "full-pull": 17,
+    "play-icon": 8
+  },
+  "changes": [
+    "equal capsule width/height",
+    "matched outer screen margins",
+    "artwork repositioned without resizing",
+    "mini click regions split at center",
+    "shared morph destination updated"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "home": "B discovery + C personal",
+  "mainDestinations": ["发现", "个人"],
+  "fullIntegrationChecks": 39,
+  "fullIntegrationResult": "PASS",
+  "progressiveFocusedRuns": 3,
+  "progressiveFocusedChecks": 24,
+  "progressiveFocusedResult": "PASS",
+  "accountStoreChecks": "isolated Android Keystore-backed storage",
+  "manual": ["live discovery data", "live personal playlists", "avatar popup", "daily song playback", "open full player", "return navigation"],
+  "limits": ["Second live account was not added", "All font scales not yet covered", "Backdrop material uses cover blur rather than global backdrop capture"]
+}

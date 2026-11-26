@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-14",
+  "installed": true,
+  "svgAssets": [
+    "stem-vocals.svg",
+    "stem-original.svg",
+    "stem-accompaniment.svg"
+  ],
+  "suites": {
+    "stem-control": 21,
+    "full-pull": 17
+  },
+  "verified": [
+    "single original mode default",
+    "concentric right-side satellite expansion",
+    "vocals/original/accompaniment callback parameters",
+    "selected icon swaps with main button",
+    "selection remains expanded until main tap",
+    "collapsed options hidden and disabled",
+    "external playback state synchronizes mode",
+    "downward drag cancellation never commits mode",
+    "liquid opening intermediate frame",
+    "mid-animation reversal preserves current expansion",
+    "reversed close and reopened endpoints",
+    "circular tangent surfaces match liquid bridges",
+    "straight exchange with selected satellite in foreground and circle/glyph size interpolation",
+    "rapid selection callback commits immediately",
+    "interrupted exchange starts at current visible positions"
+  ],
+  "visual": [
+    "stem-circles-expanded.png",
+    "stem-circles-vocals.png",
+    "stem-liquid-opening.png",
+    "stem-liquid-closing.png",
+    "stem-swap-midpoint.png"
+  ],
+  "limitation": "Isolated callback tests; did not regenerate real separated audio or mutate user queue."
+}

@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-14",
+  "installed": true,
+  "suites": {
+    "stem-preload": 40,
+    "stem-control": 21
+  },
+  "visual": [
+    "stem-progress-live.png",
+    "stem-progress-complete.png",
+    "stem-circles-expanded.png"
+  ],
+  "progressSource": "committed PCM duration divided by total audio duration; completion after final WAV cache publication",
+  "verified": [
+    "white button surfaces",
+    "original glyph always colored and never shows progress",
+    "vocals/accompaniment glyphs gray until completion",
+    "clockwise growing 6-unit ring touching button edge",
+    "no visible numeric progress",
+    "immediate unavailable-stem visual selection without toast",
+    "generated prefix automatically connects audio",
+    "2000ms idle collapse from last release; held-touch and idle checks passed",
+    "held touch suspends idle expiry",
+    "real processing progress and completed colors",
+    "next-song progress isolation and cancelled-progress reset"
+  ],
+  "userStateRestored": true
+}

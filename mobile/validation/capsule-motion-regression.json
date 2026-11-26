@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "native_suite": "capsule-sides",
+  "checks": 13,
+  "result": "PASS",
+  "model_test": "CapsuleSpringTest passed position/velocity continuity, retargeting and settling",
+  "drag_range": 260,
+  "card_travel": 128,
+  "card_normal_zoom": 0.04,
+  "extra_card_shrink_limit": 0.03,
+  "extra_rail_shrink_limit": 0.01,
+  "extra_translation_limit": 24,
+  "spring_omega": 19,
+  "spring_damping": 0.9,
+  "projection_seconds": 0.16,
+  "idle_ms": 2000,
+  "full_suite_rerun": false,
+  "screenshot": "capsule-overtravel-depth.png",
+  "performance_trace_taken": false
+}

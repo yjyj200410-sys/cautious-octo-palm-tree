@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "build": "assembleDebug / assembleDebugAndroidTest passed and installed",
+  "suite": "sketch-controls",
+  "checks": 21,
+  "result": "PASS",
+  "full_suite_rerun": false,
+  "queue_validation": "PlaybackOrderTest passed: independent combinations, exhaustion, history, legacy restore",
+  "layout": {
+    "favorite": [
+      84.0,
+      1544,
+      122,
+      129
+    ],
+    "repeat": [
+      297.66666666666663,
+      1544,
+      122,
+      129
+    ],
+    "shuffle": [
+      511.3333333333333,
+      1544,
+      122,
+      129
+    ],
+    "download": [
+      725.0,
+      1544,
+      122,
+      129
+    ]
+  },
+  "hatching": {
+    "stroke_width": [
+      12,
+      13.4
+    ],
+    "spacing": 27,
+    "color": "white"
+  },
+  "screenshots": [
+    "sketch-controls-loop.png",
+    "sketch-controls-shuffle.png",
+    "sketch-controls-downloaded.png"
+  ],
+  "real_account_or_queue_changed": false,
+  "real_network_download_executed": false,
+  "later_fix": {
+    "shuffle": "open lower-right arrow included in fill mask without changing outline",
+    "download": "white full hatching on completion; check centered with black separation",
+    "native_render_reviewed": true
+  },
+  "layout_verification": "native rendered in capsule-left/right screenshots; earlier feature suite not rerun for spacing"
+}

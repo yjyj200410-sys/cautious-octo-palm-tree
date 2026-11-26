@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-13",
+  "suite": "capsule-sides",
+  "result": "PASS",
+  "checks": 5,
+  "scope": [
+    "right swipe reveals left",
+    "left capsule hit test",
+    "reverse swipe hides",
+    "left swipe reveals right",
+    "two-second auto-hide"
+  ],
+  "screenshots": [
+    "capsule-left-revealed.png",
+    "capsule-right-revealed.png"
+  ],
+  "full_suite_rerun": false,
+  "account_or_queue_mutated": false,
+  "button_row": {
+    "left_margin": 84,
+    "right_margin": 84,
+    "button_width": 122,
+    "center_step": 213.66666666666666
+  }
+}

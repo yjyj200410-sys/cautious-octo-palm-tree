@@ -319,7 +319,7 @@
     "darkTheme": "Koyu Tema",
     "systemTheme": "Sistem Teması",
     "language": "Dil",
-    "languageDescription": "Volo'nın görüntülemesini istediğiniz dili seçin",
+    "languageDescription": "Doto'nın görüntülemesini istediğiniz dili seçin",
     "audioPlayback": "Ses Oynatma",
     "showRemainingSongDuration": "Kalan şarkı süresini göster",
     "showRemainingSongDurationDescription": "Varsayılan şarkı süresi yerine şarkının kalan süresini gösterir.",
@@ -341,7 +341,7 @@
     "second": "saniye",
     "second_other": "saniye",
     "accounts": "Hesaplar",
-    "integrateLastFm": "Last.fm'i Volo ile entegre edin.",
+    "integrateLastFm": "Last.fm'i Doto ile entegre edin.",
     "lastFmLogo": "LastFM Logosu",
     "lastFmConnected": "LastFM Bağlandı",
     "lastFmNotConnected": "LastFM Bağlı Değil",
@@ -369,7 +369,7 @@
     "musixmatchEnabled": "Musixmatch Şarkı Sözleri Etkinleştirildi",
     "saveLyricsAutomaticallyDescription": "Şarkı Sözleri Sayfasında getirildiğinde şarkı sözlerini otomatik olarak kaydetmek için bir seçenek belirleyin.",
     "saveLyricsAutomaticallyInfo": "Otomatik olarak indirilen şarkılar, ses oynatıcının kafasının karışmasını önlemek için mevcut şarkı bittikten sonra kaydedilecektir.",
-    "saveLyricsInLrcFilesDescription": "Meta veri düzenlemeyi destekleyen şarkılar için şarkı sözlerini LRC dosyalarına kaydetmeyi etkinleştirin. Şarkı meta veri düzenlemeyi desteklemiyorsa, Volo şarkı sözlerini bir LRC dosyasına kaydeder.",
+    "saveLyricsInLrcFilesDescription": "Meta veri düzenlemeyi destekleyen şarkılar için şarkı sözlerini LRC dosyalarına kaydetmeyi etkinleştirin. Şarkı meta veri düzenlemeyi desteklemiyorsa, Doto şarkı sözlerini bir LRC dosyasına kaydeder.",
     "saveLyricsInLrcFiles": "Şarkı sözlerini desteklenen şarkılar için de LRC dosyalarına kaydet",
     "lrcFileCustomSaveLocationDescription": "İlgili şarkının yanına kaydetmek istemiyorsanız şarkıların LRC dosyalarını kaydetmek için özel bir konum seçin.",
     "selectedCustomLocation": "Seçili Özel Konum",
@@ -404,7 +404,7 @@
     "hideWindowOnCloseDescription": "Pencereyi kapattığınızda pencerenin nasıl davranması gerektiğini yapılandırın.",
     "hideWindowOnClose": "Kapat düğmesine tıklandığında sistem tepsisine açılan pencereyi gizleyin.",
     "storage": "Depolama",
-    "storageDescription": "Volo'nın kütüphanenizi nasıl yönettiğini ve depolama alanınızı nasıl kullandığını görün.",
+    "storageDescription": "Doto'nın kütüphanenizi nasıl yönettiğini ve depolama alanınızı nasıl kullandığını görün.",
     "fullStorageSpace": "Tam Depolama Kullanımı",
     "fullStorageOutOfUsage": "{{value }}/{{ total}}",
     "freeSpace": "Boş alan",
@@ -432,7 +432,7 @@
     "luminaWebsite": "Nora Resmi Web Sitesi",
     "luminaDiscordServer": "Nora Resmi Discord Sunucusu",
     "luminaGithubRepo": "Nora Github Deposu",
-    "luminaDescription": "Volo, Electron ve React kullanılarak oluşturulmuş zarif bir müzik çalar.",
+    "luminaDescription": "Doto, Electron ve React kullanılarak oluşturulmuş zarif bir müzik çalar.",
     "luminaInspiration": "Piyush Mamidwar'dan <hyperlink>Android için Oto Music'ten</hyperlink> esinlenilmiştir.",
     "otoMusicOnPlayStore": "PlayStore'da Android için Oto Music",
     "luminaLicenseNotice": "Bu ürün <button>MIT lisansı altında lisanslanmıştır.</button>",
@@ -558,7 +558,7 @@
     "updateAddedToBeSavedLater": "Şu anda çalmakta olan şarkıların meta veri güncellemeleri, şarkı çalma işlemi bittikten sonra kaydedilecektir.",
     "pendingUpdateAvailable": "Bu şarkının meta veri güncellemesi kaydedilmeyi bekliyor.",
     "saveTagsNotSupportedTitle": "Desteklenmiyor",
-    "saveTagsNotSupportedDescription": "<P1>Volo şu anda şarkı meta verilerini <Format /> formatında düzenlemeyi desteklemiyor.</ P1><P2>Şu anda yalnızca < SupportedFormat /> biçimi desteklenmektedir.",
+    "saveTagsNotSupportedDescription": "<P1>Doto şu anda şarkı meta verilerini <Format /> formatında düzenlemeyi desteklemiyor.</ P1><P2>Şu anda yalnızca < SupportedFormat /> biçimi desteklenmektedir.",
     "albumArtistNotMentioned": "Şarkının zaten '{{ title }}' adlı bir albümü var, ancak sanatçıları '{{ artists }}' bu şarkı için albüm sanatçısı olarak belirtilmedi.",
     "songAlbumArtistMismatch": "Seçilen albüm sanatçı(lar) ı '{{ albumArtists }}' seçilen albüm '{{ albumTitle }}' sanatçı(lar) ı '{{ songAlbumArtists }}' ile eşleşmiyor.",
     "searchForArtists": "Sanatçıları burada arayın",
@@ -662,7 +662,7 @@
   "resetAppConfirmationPrompt": {
     "confirmAppReset": "Uygulama Sıfırlamayı Onayla",
     "message": "Uygulamayı sıfırlamak, şarkılarla ilgili veriler, favorilerle ilgili veriler, tercihlerinizle ilgili veriler, uygulanan ayarlar verileri vb. dahil olmak üzere tüm kullanıcı verilerinizi kaldırır; ancak bu sistemdeki şarkıları kaldırmaz. Bu sürecin <span>GERİ DÖNDÜRÜLEMEZ</span> olacağını unutmayın.",
-    "restartAfterReset": "Sıfırlamadan sonra Volo yeniden başlayacaktır.",
+    "restartAfterReset": "Sıfırlamadan sonra Doto yeniden başlayacaktır.",
     "systemPlaylistsRemovalProhibited": "Geçmiş veya Sık Kullanılanlar gibi Oynatma Listelerini kaldıramazsınız."
   },
   "addSongsToPlaylistsPrompt": {
@@ -715,7 +715,7 @@
     "removeFolder": "Klasörü Kaldır"
   },
   "lyricsEditorHelpPrompt": {
-    "title": "Volo'nın Şarkı Sözü Düzenleyicisi nasıl kullanılır?",
+    "title": "Doto'nın Şarkı Sözü Düzenleyicisi nasıl kullanılır?",
     "subTitle1": "Editörü kullanmaya nasıl başlanır?",
     "subTitle1Message": " <ol><li>Sözlerini düzenlemeye çalıştığın şarkıyı çal. (Doğru şarkıda değilseniz, uygulama şarkı sözleri satırlarına yanlış meta veri eklemeyi önleyecektir.)</li><li> Sayfaya odaklanmak için sayfa alanına tıklayın. (Sayfaya özgü klavye kısayollarının çalışması için sayfa odağı gereklidir.)</li><li> Şarkıyı baştan başlatın. Çalma üzerinde daha fazla kontrol istiyorsanız, mevcut şarkıyı tekrar edecek şekilde ayarlayın.</li><li> Şarkının sesi şarkı sözleri satırını söylerken, bir sonraki şarkı sözleri satırını vurgulamak ve etiketi başlatmak için geçerli saati eklemek için <shortcutbutton>$t(appShortcutsPrompt.enterKey)</shortcutbutton> tuşuna basın.</li><li> Son söz satırına kadar devam edin.</li></ol>",
     "subTitle2": "Şarkı Sözü Düzenleyicisi'nde kullanabileceğim klavye kısayolları nelerdir?",
@@ -729,7 +729,7 @@
     "saveEditedLyrics": "Düzenlenen Şarkı Sözlerini Kaydet",
     "copyLyrics": "Şarkı Sözlerini Kopyala",
     "saveLyricsToSong": "Şarkı sözlerini şarkıya kaydet",
-    "saveLyricsNotSupported": "Volo şu anda şarkı sözlerini '{{ format }}' ses biçimindeki şarkılara kaydetmeyi desteklemiyor.",
+    "saveLyricsNotSupported": "Doto şu anda şarkı sözlerini '{{ format }}' ses biçimindeki şarkılara kaydetmeyi desteklemiyor.",
     "saveLyricsFormatInfo": "* Sözler <hyperlink>LRC formatında</hyperlink> kaydedilir.",
     "readAboutLrcFormat": "LRC formatı hakkında daha fazla bilgi edinin"
   },
@@ -812,13 +812,13 @@
   },
   "clearLocalStoragePrompt": {
     "title": "Yerel Depolama Verilerinin Temizlenmesini Onayla",
-    "description": "Bu işlem, Volo'daki bozuk yerel depolama verilerini temizleyecek ve varsayılan ayarlara geri döndürecektir.",
-    "effect": "<p>Bu işleme devam etmek şu verileri etkiler:</p><ul><li> Şu anda çalmakta olan şarkı</li>, ses seviyesi vb. gibi<li> Volo Playback ayarlarındaki Çoğu Tercih Ayarları</li>.<li>Geçerli sıra verileri</li><li> Sanatçıları, ayrı sanatçıları ve kopyaları öne çıkarma gibi öneri verilerini yok</li> sayma<li> Sayfa sıralama verileri</li><li>Ekolayzer verileri</li><li>Şarkı Sözleri Düzenleyici ayarları</li></ul>",
-    "restartNotice": "Volo işlemden sonra yeniden başlayacaktır."
+    "description": "Bu işlem, Doto'daki bozuk yerel depolama verilerini temizleyecek ve varsayılan ayarlara geri döndürecektir.",
+    "effect": "<p>Bu işleme devam etmek şu verileri etkiler:</p><ul><li> Şu anda çalmakta olan şarkı</li>, ses seviyesi vb. gibi<li> Doto Playback ayarlarındaki Çoğu Tercih Ayarları</li>.<li>Geçerli sıra verileri</li><li> Sanatçıları, ayrı sanatçıları ve kopyaları öne çıkarma gibi öneri verilerini yok</li> sayma<li> Sayfa sıralama verileri</li><li>Ekolayzer verileri</li><li>Şarkı Sözleri Düzenleyici ayarları</li></ul>",
+    "restartNotice": "Doto işlemden sonra yeniden başlayacaktır."
   },
   "musixmatchDisclaimerPrompt": {
     "title": "Sorumluluk Reddi - Musixmatch Şarkı Sözleri",
-    "message": "<li> Musixmatch Şarkı Sözleri, bu yazılıma bir değerlendirme özelliği olarak eklenmiştir ve herhangi bir zamanda kaldırılabilir.</li><li>Volo, hiçbir şekilde Musixmatch Lyrics veya herhangi bir iştiraki veya yan kuruluşu ile bağlantılı, yetkili, bakımlı, sponsorlu veya onaylı değildir.</li><li> Bu uygulamanın geliştiricileri, Musixmatch Lyrics tarafından uygulanan telif haklarına uyarak kullanılması amaçlandığından, kullanıcılarının kişisel sorumluluğunu bu özelliği adil bir şekilde kullanmaya çağırır.</li>",
+    "message": "<li> Musixmatch Şarkı Sözleri, bu yazılıma bir değerlendirme özelliği olarak eklenmiştir ve herhangi bir zamanda kaldırılabilir.</li><li>Doto, hiçbir şekilde Musixmatch Lyrics veya herhangi bir iştiraki veya yan kuruluşu ile bağlantılı, yetkili, bakımlı, sponsorlu veya onaylı değildir.</li><li> Bu uygulamanın geliştiricileri, Musixmatch Lyrics tarafından uygulanan telif haklarına uyarak kullanılması amaçlandığından, kullanıcılarının kişisel sorumluluğunu bu özelliği adil bir şekilde kullanmaya çağırır.</li>",
     "implementationNotice": "Fashni'den uygulama<hyperlink></hyperlink>.",
     "hyperlinkTitle": "MxLRC Github Deposu",
     "contactAboutComplaints": "Herhangi bir şikayetiniz varsa, <hyperlink>e - postam aracılığıyla benimle iletişime geçin.</hyperlink>."
@@ -833,7 +833,7 @@
     "tokenUpdateFailed": "Jeton güncellenemedi.",
     "tokenMissingCharacters": "BELİRTEÇ 54 karakterden oluşan bir dize olmalıdır. ({{count}} karakter daha gereklidir).",
     "tokenIncorrectCharacters": "BELİRTEÇ yalnızca alfasayısal karakterler içermelidir.",
-    "savedTokenAvailableMessage": "<title>&lt;span /&gt; Kaydedilmiş bir jeton mevcut.</title><p> Kullanıcı tarafından kaydedilen geçerli bir Musixmatch belirteci Volo'da zaten mevcut.</p> <p> Yalnızca hizmet düzgün çalışmıyorsa belirteci değiştirmeniz gerekir.</p>"
+    "savedTokenAvailableMessage": "<title>&lt;span /&gt; Kaydedilmiş bir jeton mevcut.</title><p> Kullanıcı tarafından kaydedilen geçerli bir Musixmatch belirteci Doto'da zaten mevcut.</p> <p> Yalnızca hizmet düzgün çalışmıyorsa belirteci değiştirmeniz gerekir.</p>"
   },
   "customizeSelectedMetadataPrompt": {
     "selected": "Seçildi",

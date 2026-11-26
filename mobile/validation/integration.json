@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-12",
+  "device": "PKR110 / Android API 36",
+  "searchResults": 30,
+  "downloadBytes": 1004399,
+  "downloadedFormat": "MP3",
+  "nativeMediaExtractorPassed": true,
+  "downloadedAudioSeconds": 62.7,
+  "separationSeconds": 13,
+  "trialDownloadRejected": true,
+  "realAccountLoginVerified": false,
+  "note": "Physical-device integration test. Login, personal playlists, export and playback interactions require user verification."
+}

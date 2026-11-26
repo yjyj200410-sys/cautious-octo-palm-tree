@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-13",
+  "installed": true,
+  "suites": {
+    "track-auto": 73,
+    "track-depth": 46,
+    "track-profile": 1,
+    "track-roundtrip": 54
+  },
+  "verified": [
+    "four external selection updates without touch",
+    "visible hardware card during transition and after completion",
+    "late artwork update preserves visibility",
+    "same-track metadata refresh does not restart transition",
+    "no duplicate next/previous callback",
+    "manual consecutive switching and reverse close preserved",
+    "twelve alternating automatic metadata updates; real hardware screenshots each update",
+    "six manual next/previous roundtrips; hardware card visibility and reverse close checked each step"
+  ],
+  "visual": "roundtrip-card.png",
+  "profile": {
+    "frames": 352,
+    "missedDeadline": 8,
+    "totalP50Ms": 6.889891,
+    "totalP95Ms": 8.383597,
+    "totalMaxMs": 21.473064,
+    "drawP95Ms": 2.27776,
+    "drawMaxMs": 3.9975,
+    "sampleColumns": "total,draw,deadline,dropped,unknownDelay,sync,commandIssue,swapBuffers,gpu; duration in ms",
+    "scope": "8 isolated same-direction swipes; actual Window FrameMetrics; synthetic queue metadata; no audio/network queue mutation"
+  },
+  "limitation": "Automatic metadata callbacks simulated; did not await real song completion or modify user playback queue.",
+  "change": "Removed manually managed RenderNode card cache; native hardware Canvas draws cards directly."
+}

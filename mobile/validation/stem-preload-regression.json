@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-14",
+  "installed": true,
+  "setting": "preload-stems",
+  "defaultEnabled": false,
+  "futureSongs": 1,
+  "suites": {
+    "stem-preload": 40,
+    "stem-handoff": 38,
+    "service-integration": 39,
+    "stem-control": 18
+  },
+  "visual": [
+    "stem-preload-setting-off.png"
+  ],
+  "verified": [
+    "default playback starts no model",
+    "native settings switch and persistent choice",
+    "current then next serial generation",
+    "one future song only",
+    "cache reuse",
+    "original playback mode retained",
+    "manual generation while disabled",
+    "disable preserves manual job",
+    "prefetch promotion keeps task and prefix",
+    "disable cancels automatic output publication",
+    "sequential/list-loop/single-loop/shuffle targets",
+    "real player action switches to generated prefix while paused"
+  ],
+  "limitations": [
+    "Actual local model and PCM fixtures; online next-track network variability not benchmarked."
+  ],
+  "userStateRestored": true
+}

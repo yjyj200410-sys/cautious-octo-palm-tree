@@ -1,0 +1,55 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "build": "assembleDebug / assembleDebugAndroidTest passed; installed",
+  "latest_focused_suite": {
+    "name": "capsule-drag-native",
+    "checks": 13,
+    "result": "PASS",
+    "scope": "native view handlers: left/up follow, reverse, cancel, regrab, complete, restored window flags, persistent underlay; before play offset change"
+  },
+  "earlier_morph_suite": {
+    "checks": 8,
+    "result": "PASS",
+    "scope": "before later size and home layout tuning"
+  },
+  "final_geometry": {
+    "play_center": [
+      763,
+      1815
+    ],
+    "mini_pill": [
+      530.5,
+      1725,
+      847,
+      1905
+    ],
+    "cover_diameter": 129,
+    "mini_scale_from_initial": 1.5,
+    "navigation": [
+      84,
+      1725,
+      454,
+      1905
+    ],
+    "equal_side_margin": 84
+  },
+  "home_verified": [
+    "status bar hidden",
+    "floating capsule layout",
+    "scroll through empty area between capsules"
+  ],
+  "full_suite_rerun": false,
+  "account_or_queue_mutated": false,
+  "transition": {
+    "expand_ms": 520,
+    "collapse_ms": 480,
+    "cancel_ms": 280,
+    "cover": "smoothstep over full progress; other controls opaque through 55%, fade smoothly from 55% to 92% collapse",
+    "latest_duration_check": "play offset-only update: assembleDebug and device install passed; no suite rerun",
+    "gesture_collapse": "velocity-matched monotone Hermite; duration scales with remaining distance, maximum 480ms",
+    "snapshot": "half width/height; directly alpha-composited bitmap; skip faded page content",
+    "opening_gesture": "continuous reversible drag; touch can interrupt a settling expansion, keeping current progress",
+    "handoff": "mini remains visible under dialog; fixed above homepage content with translationZ 32dp; no hide/show handoff"
+  }
+}

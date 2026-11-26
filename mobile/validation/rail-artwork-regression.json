@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "suite": "rail-artwork",
+  "result": "PASS",
+  "executed_checks": 11,
+  "later_test_cleanup": "removed unconditional fixture-preparation count; production code unchanged",
+  "live_cdn_covers": 5,
+  "screenshots": [
+    "rail-artwork-live.png",
+    "rail-artwork-cache.png"
+  ],
+  "scope": [
+    "failure retry callback survives cleanup",
+    "shared cache survives loader close",
+    "visible edge windows covered",
+    "scroll-away/back preserves thumbnails",
+    "CDN parameter normalized",
+    "live CDN images rendered"
+  ],
+  "account_or_queue_mutated": false,
+  "full_suite_rerun": false
+}

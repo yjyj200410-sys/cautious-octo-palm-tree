@@ -580,6 +580,7 @@ const ncm = {
 
 export const api = {
   stemSeparation: {
+    exportTrack: (kind: 'original' | 'vocals' | 'accompaniment'): Promise<boolean> => ipcRenderer.invoke('mss/export', kind),
     clearCache: (): Promise<void> => ipcRenderer.invoke('mss/clearCache'),
     setEnabled: (enabled: boolean): Promise<MssRuntimeInfo | null> =>
       ipcRenderer.invoke('mss/setEnabled', enabled),

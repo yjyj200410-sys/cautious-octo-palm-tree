@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" fill="none">
+  <title>Straight-stroke hand-drawn heart</title>
+  <desc>Nearly balanced white hollow heart, drawn with straight angular pen strokes and a light second pass. Transparent background.</desc>
+  <g stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="miter" stroke-miterlimit="2.5">
+    <path stroke-width="4.8" d="M45 101 L91 52 L128 96 L165 54 L211 101 L129 211 Z"/>
+    <!-- Slightly offset straight passes retain pen character without waviness. -->
+    <path stroke-width="2.2" d="M50 102 L91 59 L127 102 L165 60 L205 101 L128 205 L50 102"/>
+    <path stroke-width="2.6" d="M43 100 L90 50 M92 54 L126 97 M166 53 L214 104 M207 106 L127 214 M48 107 L131 214"/>
+  </g>
+</svg>

@@ -1,0 +1,1 @@
+{"date":"2026-11-13","suite":"spatial-hold","device":"PKR110","checks":6,"result":"PASS","linearAccelerationRegistered":true,"hostModelRatesHz":[30,60,90,120],"render":"spatial-hold-native.png","physicalHandheldFeelVerified":false,"scope":"translation only; no account or queue mutation"}

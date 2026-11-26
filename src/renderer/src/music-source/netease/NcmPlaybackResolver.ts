@@ -2,11 +2,10 @@
  * NcmPlaybackResolver — 网易云播放 URL 解析，VIP 歌曲通过多层 fallback 解锁。
  *
  * resolve(songId):
- *   1. song/url/v1 (unblock=true 启用 API 内置解灰)
- *   2. 可播放 → 直接返回
+ *   1. song/url/v1 官方请求
+ *   2. 官方播放或客户端下载地址可完整播放 → 直接返回
  *   3. VIP/灰 → localhost:25884/api/unblock/ 按序: GD音乐台 → Kuwo → Bodian → Gequbao
- *   4. 仍失败 → song/download/url/v1 备选
- *   5. 全部失败 → 若官方给了试听 URL，回退 30s 试听（isTrial=true，UI 提示「会员歌曲」）；否则 url=null
+ *   4. 全部失败 → 若官方给了试听 URL，回退 30s 试听（isTrial=true，UI 提示「会员歌曲」）；否则 url=null
  */
 
 import { NcmRepository } from '../../ncm/repository';
@@ -72,7 +71,12 @@ function parseUrlItem(item: Record<string, unknown> | undefined): {
 } {
   if (!item) return { url: null, fee: 0, payed: 0, st: 0, freeTrialInfo: null, br: 0, level: '' };
 
-  const url = (item.url as string) || null;
+  const url =
+    typeof item.url === 'string' &&
+    /^https?:\/\//i.test(item.url) &&
+    (item.code === undefined || item.code === 200)
+      ? item.url
+      : null;
   // ★ freeTrialInfo 可能是字符串 "null"（API 内置 unblock 成功时）或 null
   const rawTrial = item.freeTrialInfo;
   const freeTrialInfo = rawTrial === 'null' ? null : (rawTrial ?? null);
@@ -151,42 +155,9 @@ async function resolveOfficial(songId: number): Promise<ReturnType<typeof parseU
   }
 }
 
-/** 判断 URL 是否可以完整播放（非试听、非VIP限制） */
+/** 官方返回的整曲 URL 是可播依据，fee/payed 仅用于日志。 */
 function isFullyPlayable(official: ReturnType<typeof parseUrlItem>): boolean {
-  if (!official.url) {
-    console.log(`[NCM_PLAYABLE] false — no URL`);
-    return false;
-  }
-  // 免费歌曲
-  if (official.fee === 0) {
-    console.log(`[NCM_PLAYABLE] true — fee=0 (free song)`);
-    return true;
-  }
-  // 已付费/已购买
-  if (official.payed === 1) {
-    console.log(`[NCM_PLAYABLE] true — payed=1 (VIP/paid user)`);
-    return true;
-  }
-  // 试听限制
-  if (official.freeTrialInfo) {
-    const trialStr = typeof official.freeTrialInfo === 'object'
-      ? JSON.stringify(official.freeTrialInfo)
-      : String(official.freeTrialInfo);
-    console.log(`[NCM_PLAYABLE] false — freeTrialInfo=${trialStr}`);
-    return false;
-  }
-  // 特殊状态（灰色）
-  if (official.st !== 0) {
-    console.log(`[NCM_PLAYABLE] false — st=${official.st} (grey/special status)`);
-    return false;
-  }
-  // VIP 未付费 (fee=1/4/8 且 payed≠1)
-  if (official.fee > 0 && official.payed !== 1) {
-    console.log(`[NCM_PLAYABLE] false — fee=${official.fee}>0 && payed=${official.payed}≠1 (VIP not paid)`);
-    return false;
-  }
-  console.log(`[NCM_PLAYABLE] true — fallthrough (url exists, all checks passed)`);
-  return true;
+  return Boolean(official.url && !official.freeTrialInfo);
 }
 
 async function tryUnlockProvider(
@@ -228,7 +199,8 @@ async function tryDownloadUrl(songId: number): Promise<string | null> {
   try {
     const raw = await NcmRepository.getSongDownloadUrlRaw(songId);
     const data = (raw as Record<string, unknown>)?.data as Record<string, unknown> | undefined;
-    const url = data?.url as string | undefined;
+    const candidate = parseUrlItem(data);
+    const url = isFullyPlayable(candidate) ? candidate.url : null;
     if (url) {
       downloadCount++;
       if (!summaryTimer) summaryTimer = setTimeout(logSummary, 2000);
@@ -236,7 +208,7 @@ async function tryDownloadUrl(songId: number): Promise<string | null> {
     } else {
       console.warn(`[NCM_DOWNLOAD] failed songId=${songId}`);
     }
-    return url ?? null;
+    return url;
   } catch (err) {
     console.warn(`[NCM_DOWNLOAD] err songId=${songId}:`, err instanceof Error ? err.message : err);
     return null;
@@ -298,10 +270,10 @@ export const NcmPlaybackResolver = {
       resolveCache.delete(songId);
     }
 
-    // 1. song/url/v1 (unblock=true 启用 API 内置解灰)
+    // 1. song/url/v1 官方请求
     // ★ 后台预热不污染用户点击的 trace
     // ★ 第三方合成条目没有网易云 id，官方解析毫无意义 → 跳过（official 保持空值，
-    //   playable=false，第 5 步试听兜底随之失效）
+    //   playable=false，试听兜底随之失效）
     const trace = fromPrefetch ? null : getPlayTrace();
     let official: ReturnType<typeof parseUrlItem> = {
       url: null, fee: 0, payed: 0, st: 0, freeTrialInfo: null, br: 0, level: '',
@@ -329,6 +301,26 @@ export const NcmPlaybackResolver = {
       const urlPreview = result.url ? result.url.slice(0, 100) : 'null';
       console.log(
         `[NCM_FINAL_URL] songId=${songId} source=netease unlocked=false ` +
+        `fromPrefetch=${fromPrefetch} url=${urlPreview}`
+      );
+      return result;
+    }
+
+    // 官方客户端下载整曲地址也优先于第三方。
+    //    ★ 第三方合成 id 无法走网易云下载 → 跳过
+    const downloadUrl = isThirdParty ? null : await tryDownloadUrl(songId);
+    if (downloadUrl) {
+      const result: ResolveResult = {
+        url: downloadUrl,
+        source: 'download',
+        unlocked: false,
+        fromPrefetch,
+        createdAt: Date.now(),
+      };
+      resolveCache.set(songId, { result, ts: Date.now() });
+      const urlPreview = downloadUrl.slice(0, 100);
+      console.log(
+        `[NCM_FINAL_URL] songId=${songId} source=download unlocked=false ` +
         `fromPrefetch=${fromPrefetch} url=${urlPreview}`
       );
       return result;
@@ -413,27 +405,7 @@ export const NcmPlaybackResolver = {
       return result;
     }
 
-    // 4. song/download/url/v1 备选
-    //    ★ 第三方合成 id 无法走网易云下载 → 跳过
-    const downloadUrl = isThirdParty ? null : await tryDownloadUrl(songId);
-    if (downloadUrl) {
-      const result: ResolveResult = {
-        url: downloadUrl,
-        source: 'download',
-        unlocked: true,
-        fromPrefetch,
-        createdAt: Date.now(),
-      };
-      resolveCache.set(songId, { result, ts: Date.now() });
-      const urlPreview = downloadUrl.slice(0, 100);
-      console.log(
-        `[NCM_FINAL_URL] songId=${songId} source=download unlocked=true ` +
-        `fromPrefetch=${fromPrefetch} metaDuration=${metaDuration}ms url=${urlPreview}`
-      );
-      return result;
-    }
-
-    // 5. 全部失败 — 官方试听兜底：解锁失败但官方给了 30s 试听 URL 时，
+    // 4. 全部失败 — 官方试听兜底：解锁失败但官方给了 30s 试听 URL 时，
     //    回退到试听（isTrial=true，UI 会提示「会员歌曲」），而不是静默失败。
     //    仅当 freeTrialInfo 明确标记为试听才回退；灰色/无 URL 仍返回 null。
     //    ★ 第三方合成条目没有官方 URL → 该兜底天然失效，这里再显式排除。

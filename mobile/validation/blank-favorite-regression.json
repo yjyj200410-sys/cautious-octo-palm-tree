@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "suite": "blank-favorite",
+  "result": "PASS",
+  "checks": 16,
+  "scope": [
+    "blank double tap adds only",
+    "already-liked is idempotent and silent",
+    "single tap, artwork, intervening control, distance, drag excluded",
+    "heart button can remove",
+    "fill haptic stages finish and erase stops them",
+    "card double tap adds only; stronger card shrink settles"
+  ],
+  "account_or_queue_mutated": false,
+  "full_suite_rerun": false,
+  "haptic_limit": "platform feedback calls and animation phase verified; no remote assessment of physical strength",
+  "later_tuning": {
+    "haptic_steps": 12,
+    "minimum_interval_ms": 35,
+    "nominal_full_fill_interval_ms": 54.166666666666664,
+    "validation": "assembleDebug and device install passed; no suite rerun"
+  },
+  "card_zoom": {
+    "hidden": 1.04,
+    "revealed": 0.92,
+    "extra_shrink_limit": 0.03
+  },
+  "screenshots": [
+    "card-zoom-hidden.png",
+    "card-zoom-revealed.png"
+  ]
+}

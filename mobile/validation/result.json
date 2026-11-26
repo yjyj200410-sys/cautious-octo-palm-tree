@@ -1,0 +1,7 @@
+{
+  "frames": 480000,
+  "samples": 960000,
+  "desktopVsAndroidRMSE": 0.000008815204974135522,
+  "maxError": 0.000015324924874358242,
+  "reconstructionMaxError": 0.000030511058668019654
+}

@@ -351,7 +351,7 @@
     "weNoWallpapersFound": "未找到视频壁纸",
     "weRetry": "重试",
     "language": "语言",
-    "languageDescription": "选择 Volo 的显示语言",
+    "languageDescription": "选择 Doto 的显示语言",
     "player": "播放器",
     "audioPlayback": "音频播放",
     "showRemainingSongDuration": "显示歌曲剩余时长",
@@ -374,7 +374,7 @@
     "second": "秒",
     "second_other": "秒",
     "accounts": "账户",
-    "integrateLastFm": "将 Last.fm 与 Volo 集成",
+    "integrateLastFm": "将 Last.fm 与 Doto 集成",
     "lastFmLogo": "LastFM 标志",
     "lastFmConnected": "LastFM 已连接",
     "lastFmNotConnected": "LastFM 未连接",
@@ -391,7 +391,7 @@
     "sendFavoritesToLastFm": "发送收藏数据",
     "sendNowPlayingToLastFmDescription": "开始播放时自动发送当前歌曲信息到 Last.fm",
     "sendNowPlayingToLastFm": "发送当前播放歌曲数据",
-    "enableDiscordRpcDescription": "将 Discord 状态显示与 Volo 集成",
+    "enableDiscordRpcDescription": "将 Discord 状态显示与 Doto 集成",
     "enableDiscordRpc": "启用 Discord 状态显示",
     "doNotSaveLyricsAutomatically": "不自动保存歌词",
     "syncedLyricsOnly": "仅逐字歌词",
@@ -408,7 +408,7 @@
     "saveLyricsInLrcFiles": "保存 LRC 歌词文件",
     "autoTranslateLyricsDescription": "Enable automatic translation of lyrics to your 已选择 language. Lyrics will be automatically translated even if the lyrics have the same language as your 已选择 language.",
     "autoTranslateLyrics": "自动翻译歌词",
-    "autoConvertLyricsDescription": "Enable automatic conversion of supported lyrics to Latin characters. 当前ly, Volo supports converting Japanese, Chinese, 和 Korean lyrics to their respective Romanization systems.",
+    "autoConvertLyricsDescription": "Enable automatic conversion of supported lyrics to Latin characters. 当前ly, Doto supports converting Japanese, Chinese, 和 Korean lyrics to their respective Romanization systems.",
     "autoConvertLyrics": "自动转换歌词",
     "lrcFileCustomSaveLocationDescription": "Select a custom location to save LRC 文件s of songs if you don't want to save them in the same folder as the relative song.",
     "selectedCustomLocation": "已选择自定义位置",
@@ -437,17 +437,17 @@
     "performance": "性能",
     "removeAnimationOnBatteryDescription": "当设备使用电池供电时，移除应用中的动画效果。",
     "removeAnimationOnBattery": "使用电池时移除动画",
-    "allowToPreventScreenSleepingDescription": "全部ow Volo to prevent the display from going to sleep in situations with no user activity like displaying lyrics.",
+    "allowToPreventScreenSleepingDescription": "全部ow Doto to prevent the display from going to sleep in situations with no user activity like displaying lyrics.",
     "allowToPreventScreenSleeping": "允许阻止显示器进入睡眠",
     "startupAndWindowCustomization": "Startup 和 Windows settings",
-    "autoLaunchAtStartDescription": "启用后 Volo 将在您登录系统时自动启动。",
+    "autoLaunchAtStartDescription": "启用后 Doto 将在您登录系统时自动启动。",
     "autoLaunchAtStart": "开机自启动",
-    "hideWindowAtStartDescription": "配置 whether Volo should be visible when it's started up.",
-    "hideWindowAtStart": "启动时在系统托盘中启动 Volo",
+    "hideWindowAtStartDescription": "配置 whether Doto should be visible when it's started up.",
+    "hideWindowAtStart": "启动时在系统托盘中启动 Doto",
     "hideWindowOnCloseDescription": "点击关闭按钮时隐藏到托盘而不是退出",
     "hideWindowOnClose": "关闭时隐藏窗口",
     "storage": "存储",
-    "storageDescription": "See how Volo manages your library 和 utilizes your storage.",
+    "storageDescription": "See how Doto manages your library 和 utilizes your storage.",
     "fullStorageSpace": "存储使用情况",
     "fullStorageOutOfUsage": "{{value}} / {{total}}",
     "freeSpace": "可用空间",
@@ -470,7 +470,7 @@
     "generateStorageMetrics": "生成存储统计",
     "generateStorageMetricsAgain": "重新生成存储统计",
     "noStorageMetrics": "您似乎尚未生成存储指标。",
-    "storageMetricsGenerationDisclaimer": "Generating storage metrics is a relatively dem和ing computational task, this means Volo may become unresponsive temporarily. Please be patient...",
+    "storageMetricsGenerationDisclaimer": "Generating storage metrics is a relatively dem和ing computational task, this means Doto may become unresponsive temporarily. Please be patient...",
     "storageMetricsGenerationError": "生成存储指标时出现了错误，请向开发者反馈。",
     "advanced": "高级",
     "saveVerboseLogsDescription": "保存详细日志用于调试，这会增加日志文件大小",
@@ -482,7 +482,7 @@
     "luminaGithubRepo": "Nora Github 仓库",
     "luminaGithubIssues": "Nora Github Issues",
     "luminaLocalizationStatus": "Nora 本地化状态",
-    "luminaDescription": "Volo is an elegant music player built using Electron 和 React.",
+    "luminaDescription": "Doto is an elegant music player built using Electron 和 React.",
     "luminaInspiration": "灵感来源于 Piyush Mamidwar 开发的 <Hyperlink>Oto Music for Android</Hyperlink>。",
     "otoMusicOnPlayStore": "Play Store 上的 Oto Music for Android",
     "luminaLicenseNotice": "本产品基于 <Button>MIT 许可证</Button> 授权。",
@@ -520,7 +520,7 @@
     "general": "通用",
     "background": "背景",
     "autoLaunch": "开机启动",
-    "autoLaunchDescription": "系统启动时自动打开 Volo",
+    "autoLaunchDescription": "系统启动时自动打开 Doto",
     "startMaximized": "启动时最大化",
     "startMaximizedDescription": "应用启动时自动最大化窗口",
     "miniPlayerAlwaysOnTop": "迷你播放器置顶",
@@ -731,7 +731,7 @@
     "updateAddedToBeSavedLater": "当前播放歌曲的元数据更新将在播放结束后保存",
     "pendingUpdateAvailable": "此歌曲有一项元数据更新待保存。",
     "saveTagsNotSupportedTitle": "不支持",
-    "saveTagsNotSupportedDescription": "<P1>Volo currently doesn't support editing song metadata in <Format/> format.</P1><P2>当前ly only <SupportedFormat/> format is supported.",
+    "saveTagsNotSupportedDescription": "<P1>Doto currently doesn't support editing song metadata in <Format/> format.</P1><P2>当前ly only <SupportedFormat/> format is supported.",
     "albumArtistNotMentioned": "歌曲已属于专辑 `{{title}}`，但其艺术家 `{{artists}}` 未在该专辑的艺术家列表中。",
     "songAlbumArtistMismatch": "Selected album artist(s) '{{albumArtists}}' don't match with the 已选择 album '{{album标题}}' artist(s) '{{songAlbumArtists}}'.",
     "searchForArtists": "搜索艺术家",
@@ -846,7 +846,7 @@
   "resetAppConfirmationPrompt": {
     "confirmAppReset": "确认重置应用",
     "message": "重置应用将删除所有用户数据，包括歌曲、收藏、偏好设置、应用数据等。",
-    "restartAfterReset": "重置后 Volo 将重新启动。",
+    "restartAfterReset": "重置后 Doto 将重新启动。",
     "systemPlaylistsRemovalProhibited": "您无法删除系统歌单（如\"历史记录\"或\"收藏\"）。"
   },
   "addSongsToPlaylistsPrompt": {
@@ -899,7 +899,7 @@
     "removeFolder": "移除文件夹"
   },
   "lyricsEditorHelpPrompt": {
-    "title": "如何使用 Volo 的歌词编辑器",
+    "title": "如何使用 Doto 的歌词编辑器",
     "subTitle1": "如何开始使用编辑器？",
     "subTitle1Message": " <ol><li>Play the song that you are trying to edit lyrics of. (If you are not in the correct song, app will prevent adding incorrect metadata to lyrics lines.)</li><li>Click on the page area to get focus to the page. (Page focus is required for the page-specific keyboard shortcuts to work.)</li><li>Start the song from the begining. If you want more control over the playback, set to repeat the current song.</li><li>When the voice of the song is saying the lyrics line, press <ShortcutButton>$t(appShortcutsPrompt.enterKey)</ShortcutButton> to highlight the next lyrics line 和 add the current time to start tag.</li><li>Continue until the last lyrics line.</li></ol>",
     "subTitle2": "What are the keyboard shortcuts I can use in the 歌词编辑器?",
@@ -913,7 +913,7 @@
     "saveEditedLyrics": "保存编辑后的歌词",
     "copyLyrics": "复制歌词",
     "saveLyricsToSong": "将歌词保存到歌曲",
-    "saveLyricsNotSupported": "Volo 目前不支持保存 `{{format}}` 格式的歌词。",
+    "saveLyricsNotSupported": "Doto 目前不支持保存 `{{format}}` 格式的歌词。",
     "saveLyricsFormatInfo": "* 歌词保存为 <Hyperlink>LRC 格式</Hyperlink>。",
     "readAboutLrcFormat": "阅读更多关于 LRC 格式的信息"
   },
@@ -998,13 +998,13 @@
   },
   "clearLocalStoragePrompt": {
     "title": "确认清除本地存储数据",
-    "description": "此过程将清除 Volo 中任何损坏的本地存储数据并将其恢复为默认设置。",
-    "effect": "<p>继续执行此操作将影响以下数据：</p><ul><li>Volo 中的大多数偏好设置</li><li>播放设置，例如当前播放的歌曲、音量等。</li><li>当前队列数据</li><li>忽略的建议数据，例如精选艺术家、单独艺术家和重复作品</li><li>页面排序数据</li><li>均衡器数据</li><li>歌词编辑器设置</li></ul>",
+    "description": "此过程将清除 Doto 中任何损坏的本地存储数据并将其恢复为默认设置。",
+    "effect": "<p>继续执行此操作将影响以下数据：</p><ul><li>Doto 中的大多数偏好设置</li><li>播放设置，例如当前播放的歌曲、音量等。</li><li>当前队列数据</li><li>忽略的建议数据，例如精选艺术家、单独艺术家和重复作品</li><li>页面排序数据</li><li>均衡器数据</li><li>歌词编辑器设置</li></ul>",
     "restartNotice": "诺拉将在该过程结束后重新启动。"
   },
   "musixmatchDisclaimerPrompt": {
     "title": "免责声明 - Musixmatch 歌词",
-    "message": "<li> Musixmatch Lyrics 是作为评估功能添加到此软件中的，并且可以随时删除。</li><li>Volo 与 Musixmatch Lyrics 或其任何附属公司或子公司没有任何关联，也不由其授权、维护、赞助或认可。</li><li>此应用程序的维护者呼吁其用户承担个人责任，以公平的方式使用此功能，因为该功能的使用应遵守由Musixmatch 歌词。</li>",
+    "message": "<li> Musixmatch Lyrics 是作为评估功能添加到此软件中的，并且可以随时删除。</li><li>Doto 与 Musixmatch Lyrics 或其任何附属公司或子公司没有任何关联，也不由其授权、维护、赞助或认可。</li><li>此应用程序的维护者呼吁其用户承担个人责任，以公平的方式使用此功能，因为该功能的使用应遵守由Musixmatch 歌词。</li>",
     "implementationNotice": "来自 Fashni 的 <Hyperlink/> 的实现。",
     "hyperlinkTitle": "MxLRC Github 存储库",
     "contactAboutComplaints": "如果您有任何投诉，可以通过 Nora Discord 服务器或通过我的<Hyperlink>电子邮件</Hyperlink>与我联系。"
@@ -1019,7 +1019,7 @@
     "tokenUpdateFailed": "更新令牌失败。",
     "tokenMissingCharacters": "TOKEN 应该是一个 54 个字符的字符串。 （还需要 {{count}} 个字符）。",
     "tokenIncorrectCharacters": "TOKEN 只能包含字母数字字符。",
-    "savedTokenAvailableMessage": "<标题><span/> 已保存的令牌可用。</标题><p> 用户保存的有效 Musixmatch 令牌已在 Volo 中可用。</p> <p> 仅当服务无法正常运行时，您才需要更改令牌。</p>"
+    "savedTokenAvailableMessage": "<标题><span/> 已保存的令牌可用。</标题><p> 用户保存的有效 Musixmatch 令牌已在 Doto 中可用。</p> <p> 仅当服务无法正常运行时，您才需要更改令牌。</p>"
   },
   "customizeSelectedMetadataPrompt": {
     "selected": "已选择",
@@ -1205,7 +1205,7 @@
     "playingASong": "正在播放歌曲"
   },
   "app": {
-    "name": "Volo"
+    "name": "Doto"
   },
   "contextMenu": {
     "play": "播放",

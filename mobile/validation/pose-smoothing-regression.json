@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-13",
+  "suite": "pose-smoothing",
+  "checks": 14,
+  "result": "PASS",
+  "time_constant_ms": 60,
+  "display_reported_hz": 90,
+  "callbacks": 40,
+  "sample_ms": 760,
+  "callback_hz": 53,
+  "presented_fps_measured": false,
+  "full_suite_rerun": false,
+  "account_or_queue_mutated": false,
+  "screenshot": "pose-smoothing-native.png"
+}

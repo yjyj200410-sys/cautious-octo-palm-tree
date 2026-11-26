@@ -371,7 +371,7 @@
     "enableImageBasedDynamicThemesDescription": "Zmieniaj motyw aplikacji dynamicznie na podstawie motywu okładki aktualnie odtwarzanego utworu.",
 
     "language": "Język",
-    "languageDescription": "Wybierz język wyświetlania interfejsu Volo.",
+    "languageDescription": "Wybierz język wyświetlania interfejsu Doto.",
 
     "audioPlayback": "Odtwarzanie dźwięku",
     "showRemainingSongDuration": "Pokaż pozostały czas utworu",
@@ -426,11 +426,11 @@
     "musixmatchEnabled": "Teksty Musixmatch są włączone",
     "saveLyricsAutomaticallyDescription": "Wybierz opcję automatycznego zapisywania tekstów utworów przy ich pobraniu.",
     "saveLyricsAutomaticallyInfo": "Automatycznie pobrane teksty zostaną zapisane po zakończeniu utworu, aby uniknąć uszkodzenia plików.",
-    "saveLyricsInLrcFilesDescription": "Włącz zapisywanie tekstów w plikach LRC dla utworów, które wspierają edytowanie metadanych. W przeciwnym wypadku, Volo zapisze tekst w pliku LRC.",
+    "saveLyricsInLrcFilesDescription": "Włącz zapisywanie tekstów w plikach LRC dla utworów, które wspierają edytowanie metadanych. W przeciwnym wypadku, Doto zapisze tekst w pliku LRC.",
     "saveLyricsInLrcFiles": "Zapisuj teksty wspieranych utworów również w plikach LRC",
     "autoTranslateLyricsDescription": "Włącz automatyczne tłumaczenie tekstów utworów na Twój wybrany język. Teksty zostaną automatycznie przetłumaczone nawet jeśli sa one już w takim samym języku, co przez Ciebie wybrany.",
     "autoTranslateLyrics": "Automatyczne tłumaczenie tekstów",
-    "autoConvertLyricsDescription": "Włącz automatyczną transkrypcję tekstów na alfabet łaciński. Obecnie Volo obsługuje konwersję języka japońskiego, chińskiego i koreańskiego.",
+    "autoConvertLyricsDescription": "Włącz automatyczną transkrypcję tekstów na alfabet łaciński. Obecnie Doto obsługuje konwersję języka japońskiego, chińskiego i koreańskiego.",
     "autoConvertLyrics": "Automatyczna konwersja tekstów",
     "lrcFileCustomSaveLocationDescription": "Wybierz niestandardową lokalizację zapisu plików LRC, jeśli nie chcesz zapisywać ich w tym samym folderze, co powiązany utwór.",
     "selectedCustomLocation": "Wybrana niestandardowa lokalizacja",
@@ -468,13 +468,13 @@
     "startupAndWindowCustomization": "Uruchamianie i okna",
     "autoLaunchAtStartDescription": "Automatycznie uruchamiaj Norę po zalogowaniu do systemu.",
     "autoLaunchAtStart": "Uruchamiaj przy starcie systemu",
-    "hideWindowAtStartDescription": "Czy Volo ma być widoczna po uruchomieniu.",
+    "hideWindowAtStartDescription": "Czy Doto ma być widoczna po uruchomieniu.",
     "hideWindowAtStart": "Uruchamiaj zminimalizowane do zasobnika (Tray)",
     "hideWindowOnCloseDescription": "Zachowanie przycisku zamknięcia okna.",
     "hideWindowOnClose": "Minimalizuj do zasobnika po zamknięciu",
 
     "storage": "Pamięć",
-    "storageDescription": "Zobacz jak Volo zarządza biblioteką i wykorzystuje miejsce na Twoim dysku.",
+    "storageDescription": "Zobacz jak Doto zarządza biblioteką i wykorzystuje miejsce na Twoim dysku.",
 
     "fullStorageSpace": "Całkowite użycie",
     "fullStorageOutOfUsage": "{{value}} z {{total}}",
@@ -498,7 +498,7 @@
     "generateStorageMetrics": "Generuj statystyki pamięci",
     "generateStorageMetricsAgain": "Generuj ponownie statystyki pamięci",
     "noStorageMetrics": "Wygląda na to, że nie wygenerowano jeszcze statystyk pamięci.",
-    "storageMetricsGenerationDisclaimer": "Generowanie statystyk to stosunkowo wymagające obliczeniowo zadanie, co znaczy, że Volo może chwilowo nie odpowiadać. Prosimy zachować cierpliwość...",
+    "storageMetricsGenerationDisclaimer": "Generowanie statystyk to stosunkowo wymagające obliczeniowo zadanie, co znaczy, że Doto może chwilowo nie odpowiadać. Prosimy zachować cierpliwość...",
     "storageMetricsGenerationError": "Wygląda na to, że coś poszło z naszej strony nie tak. Prosimy zgłosić to do dewelopera.",
 
     "advanced": "Zaawansowane",
@@ -512,7 +512,7 @@
     "luminaGithubRepo": "Repozytorium Github Nory",
     "luminaGithubIssues": "Zgłoszenia (Issues) na Githubie",
     "luminaLocalizationStatus": "Status tłumaczeń Nory",
-    "luminaDescription": "Volo to elegancki odtwarzacz muzyki zbudowany przy użyciu o Electron i React.",
+    "luminaDescription": "Doto to elegancki odtwarzacz muzyki zbudowany przy użyciu o Electron i React.",
     "luminaInspiration": "Zainspirowane przez <Hyperlink>Oto Music for Android</Hyperlink> autorstwa Piyush Mamidwar.",
     "otoMusicOnPlayStore": "Oto Music dla Androida w Sklepie Play",
     "luminaLicenseNotice": "Ten produkt jest licencjonowany na <Button>licencji MIT.</Button>",
@@ -654,7 +654,7 @@
     "updateAddedToBeSavedLater": "Aktualizacje metadanych aktualnie odtwarzanego utworu zostaną zapisane po jego zakończeniu.",
     "pendingUpdateAvailable": "Aktualizacja tego utworu oczekuje na zapisanie.",
     "saveTagsNotSupportedTitle": "Nieobsługiwane",
-    "saveTagsNotSupportedDescription": "<P1>Volo nie obsługuje edycji metadanych w formacie <Format/>.</P1><P2>Obecnie obsługiwany jest tylko format <SupportedFormat/>.",
+    "saveTagsNotSupportedDescription": "<P1>Doto nie obsługuje edycji metadanych w formacie <Format/>.</P1><P2>Obecnie obsługiwany jest tylko format <SupportedFormat/>.",
     "albumArtistNotMentioned": "Utwór jest już częścią albumu `{{title}}`, ale wykonawca `{{artists}}` nie jest oznaczony jako wykonawca albumu.",
     "songAlbumArtistMismatch": "Wykonawcy wybranego albumu '{{albumArtists}}' nie pasują do artystów albumu '{{albumTitle}}' - '{{songAlbumArtists}}'.",
     "searchForArtists": "Szukaj wykonawców",
@@ -768,7 +768,7 @@
   "resetAppConfirmationPrompt": {
     "confirmAppReset": "Potwierdź reset aplikacji",
     "message": "Reset aplikacji usunie wszystkie dane użytkownika, w tym dane związane z utworami, ulubionymi, ustawienia itp., ale NIE usunie plików muzycznych. Ta akcja jest <span>NIEODWRACALNA</span>.",
-    "restartAfterReset": "Volo uruchomi się ponownie po resecie.",
+    "restartAfterReset": "Doto uruchomi się ponownie po resecie.",
     "systemPlaylistsRemovalProhibited": "Nie możesz usunąć playlist takich jak Historia czy Ulubione."
   },
 
@@ -844,7 +844,7 @@
     "saveEditedLyrics": "Zapisz edytowany tekst",
     "copyLyrics": "Kopiuj tekst",
     "saveLyricsToSong": "Zapisz tekst do utworu",
-    "saveLyricsNotSupported": "Volo aktualnie nie wspiera zapisu tekstu do utworów w formacie '{{format}}'.",
+    "saveLyricsNotSupported": "Doto aktualnie nie wspiera zapisu tekstu do utworów w formacie '{{format}}'.",
     "saveLyricsFormatInfo": "* Teksty są zapisywane w formacie <Hyperlink>LRC</Hyperlink>.",
     "readAboutLrcFormat": "Przezytaj więcej o formacie LRC"
   },
@@ -940,14 +940,14 @@
 
   "clearLocalStoragePrompt": {
     "title": "Potwierdź wyczyszczenie lokalnych danych na dysku",
-    "description": "Ten proces usunie wszelkie uszkodzone dane pamięci lokalnej w aplikacji Volo i przywróci ją do ustawień domyślnych.",
-    "effect": "<p>Wykonanie tej akcji wpłynie na następujące dane: </p><ul><li>Większość ustawień preferencji w aplikacji Volo</li><li>Ustawienia odtwarzania, takie jak obecnie grany utwór, głośność itp.</li><li>Dane bieżącej kolejki</li><li>Dane ignorowanych sugestii, takich jak artyści gościnni, oddzielni wykonawcy i duplikaty</li><li>Dane sortowania stron</li><li>Dane korektora graficznego</li><li>Ustawienia edytora tekstu</li></ul>",
-    "restartNotice": "Po zakończeniu procesu aplikacja Volo uruchomi się ponownie."
+    "description": "Ten proces usunie wszelkie uszkodzone dane pamięci lokalnej w aplikacji Doto i przywróci ją do ustawień domyślnych.",
+    "effect": "<p>Wykonanie tej akcji wpłynie na następujące dane: </p><ul><li>Większość ustawień preferencji w aplikacji Doto</li><li>Ustawienia odtwarzania, takie jak obecnie grany utwór, głośność itp.</li><li>Dane bieżącej kolejki</li><li>Dane ignorowanych sugestii, takich jak artyści gościnni, oddzielni wykonawcy i duplikaty</li><li>Dane sortowania stron</li><li>Dane korektora graficznego</li><li>Ustawienia edytora tekstu</li></ul>",
+    "restartNotice": "Po zakończeniu procesu aplikacja Doto uruchomi się ponownie."
   },
 
   "musixmatchDisclaimerPrompt": {
     "title": "Zastrzeżenie – teksty Musixmatch",
-    "message": "<li>Teksty Musixmatch są dodane do tego oprogramowania jako funkcja testowa i mogą zostać usunięte w dowolnym momencie.</li><li>Volo nie jest w żaden sposób powiązana z Musixmatch Lyrics ani żadną z jego firm stowarzyszonych lub spółek zależnych, nie jest też przez nie autoryzowana, utrzymywana, sponsorowana ani popierana.</li><li>Opiekunowie tej aplikacji apelują do użytkowników o osobistą odpowiedzialność i korzystanie z tej funkcji w uczciwy sposób, zgodnie z jej przeznaczeniem oraz z poszanowaniem praw autorskich stosowanych przez Musixmatch Lyrics.</li>",
+    "message": "<li>Teksty Musixmatch są dodane do tego oprogramowania jako funkcja testowa i mogą zostać usunięte w dowolnym momencie.</li><li>Doto nie jest w żaden sposób powiązana z Musixmatch Lyrics ani żadną z jego firm stowarzyszonych lub spółek zależnych, nie jest też przez nie autoryzowana, utrzymywana, sponsorowana ani popierana.</li><li>Opiekunowie tej aplikacji apelują do użytkowników o osobistą odpowiedzialność i korzystanie z tej funkcji w uczciwy sposób, zgodnie z jej przeznaczeniem oraz z poszanowaniem praw autorskich stosowanych przez Musixmatch Lyrics.</li>",
     "implementationNotice": "Implementacja na podstawie <Hyperlink/> autorstwa Fashni.",
     "hyperlinkTitle": "Repozytorium GitHub MxLRC",
     "contactAboutComplaints": "Jeśli masz jakiekolwiek skargi/zażalenia, możesz skontaktować się ze mną przez serwer Discord Nora albo przez mój <Hyperlink>email</Hyperlink>."
@@ -963,7 +963,7 @@
     "tokenUpdateFailed": "Nie udało się zaktualizować tokenu.",
     "tokenMissingCharacters": "TOKEN powinien być ciągiem 54 znaków. (Wymagane jeszcze: {{count}}).",
     "tokenIncorrectCharacters": "TOKEN powinien zawierać tylko znaki alfanumeryczne.",
-    "savedTokenAvailableMessage": "<Title><span/> Zapisany token jest dostępny.</Title><p> W aplikacji Volo dostępny jest już ważny token Musixmatch zapisany przez użytkownika.</p> <p> Musisz zmieniać token tylko wtedy, gdy usługa nie działa poprawnie.</p>"
+    "savedTokenAvailableMessage": "<Title><span/> Zapisany token jest dostępny.</Title><p> W aplikacji Doto dostępny jest już ważny token Musixmatch zapisany przez użytkownika.</p> <p> Musisz zmieniać token tylko wtedy, gdy usługa nie działa poprawnie.</p>"
   },
 
   "customizeSelectedMetadataPrompt": {

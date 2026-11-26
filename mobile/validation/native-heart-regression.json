@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "scope": "native heart button only",
+  "result": "PASS",
+  "checks": 12,
+  "instrumentation_code": -1,
+  "source_svg": "app/src/main/assets/hand-drawn-heart-button.svg",
+  "stroke_count": 10,
+  "native_rendering": "SVG paths, clip and dry-pen masks, no WebView",
+  "favorite_api_tested": false,
+  "account_or_queue_mutated": false,
+  "screenshots": [
+    "native-heart-filling.png",
+    "native-heart-filled.png"
+  ],
+  "coalescing_checks": 13,
+  "full_fill_ms": 650,
+  "full_erase_ms": 650,
+  "easing": "shared UiMotion.CURVE",
+  "debounce_ms": 200,
+  "optimistic_feedback": true,
+  "write_semantics": "one in flight per song; latest desired state wins; rollback latest failure"
+}

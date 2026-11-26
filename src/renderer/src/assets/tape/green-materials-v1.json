@@ -1,0 +1,42 @@
+[
+  {
+    "name": "chassis-green-v1",
+    "width": 1200,
+    "height": 800,
+    "alpha": false,
+    "bytes": 343274,
+    "decodedBytes": 3840000
+  },
+  {
+    "name": "key-ivory-v1",
+    "width": 256,
+    "height": 256,
+    "alpha": false,
+    "bytes": 2438,
+    "decodedBytes": 262144
+  },
+  {
+    "name": "key-orange-v1",
+    "width": 256,
+    "height": 256,
+    "alpha": false,
+    "bytes": 5412,
+    "decodedBytes": 262144
+  },
+  {
+    "name": "tape-winding-v1",
+    "width": 400,
+    "height": 400,
+    "alpha": true,
+    "bytes": 31900,
+    "decodedBytes": 640000
+  },
+  {
+    "name": "reel-hub-v1",
+    "width": 320,
+    "height": 320,
+    "alpha": true,
+    "bytes": 33204,
+    "decodedBytes": 409600
+  }
+]

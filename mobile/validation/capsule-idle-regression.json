@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-13",
+  "suite": "capsule-idle",
+  "result": "PASS",
+  "checks": 14,
+  "timeout_ms": 1000,
+  "default": "hidden",
+  "scope": "hold/release, rail selection, touch reset, lifecycle cleanup",
+  "verified_before_artwork_fix": true,
+  "full_suite_rerun": false,
+  "later_tuning": {
+    "timeout_ms": 2000,
+    "validation": "assembleDebug and PKR110 install passed; tests not rerun"
+  }
+}

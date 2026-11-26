@@ -176,7 +176,7 @@ export function useWindowManagement(
 
   /** Resets the browser/window title bar to the default "Nora" title. */
   const resetTitleBarInfo = useCallback(() => {
-    document.title = 'Volo';
+    document.title = 'Doto';
   }, []);
 
   /**

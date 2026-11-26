@@ -1,0 +1,23 @@
+[
+  {
+    "name": "chassis-green-v2",
+    "width": 768,
+    "height": 512,
+    "alpha": false,
+    "bytes": 24704
+  },
+  {
+    "name": "cassette-hub-v2",
+    "width": 320,
+    "height": 320,
+    "alpha": true,
+    "bytes": 19934
+  },
+  {
+    "name": "tape-winding-v2",
+    "width": 400,
+    "height": 400,
+    "alpha": true,
+    "bytes": 24860
+  }
+]

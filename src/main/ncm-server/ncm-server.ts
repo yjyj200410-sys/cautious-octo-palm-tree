@@ -207,7 +207,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
   // ---- /netease (索引页) ----
   if (pathname === '/netease') {
     return sendJSON(res, 200, {
-      name: 'Volo NCM Proxy',
+      name: 'Doto NCM Proxy',
       description: '网易云音乐 API 代理',
       url: '/netease/*',
       health: '/health'

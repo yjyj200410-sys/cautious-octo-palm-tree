@@ -1,0 +1,22 @@
+{
+  "date": "2026-11-13",
+  "suite": "full-pull",
+  "result": "PASS",
+  "checks": 17,
+  "areas": [
+    "card",
+    "seek",
+    "favorite",
+    "play",
+    "source"
+  ],
+  "preserved": "up/down rail selection and horizontal seeking",
+  "controls_commit_on_cancel": false,
+  "full_suite_rerun": false,
+  "real_queue_mutated": false,
+  "screenshot": "full-screen-pull-following.png",
+  "excluded_areas": [
+    "left track capsule",
+    "right track capsule"
+  ]
+}

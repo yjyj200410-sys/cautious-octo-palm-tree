@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-13",
+  "build": "passed; installed on connected device",
+  "suites": {
+    "track-depth": 46,
+    "capsule-sides": 13,
+    "full-pull": 17
+  },
+  "verified": [
+    "continued travel beyond former .24 cap",
+    "perspective transform",
+    "actual Scene redraws during release",
+    "four consecutive swipes each direction including in-flight transition",
+    "track metadata updates do not lock gesture handling",
+    "reverse short swipe closes capsule during transition without changing tracks",
+    "fresh swipe clears previous transition; no animation scrubbing",
+    "adjacent card drawn during early held drag before release",
+    "early preview does not commit playback",
+    "shuffle peek matches subsequent committed track (30 round local regression)",
+    "finite monotone trajectory reaches resting geometry within .08 design units on last frame",
+    "no second movement after landing for 650ms",
+    "no delayed pose reset starts after landing"
+  ],
+  "visual": [
+    "track-early-next.png",
+    "track-early-previous.png",
+    "track-hardware-optimized.png"
+  ],
+  "limitations": "Isolated metadata callbacks; no real queue/audio/network mutation. Real Window FrameMetrics prove sampled rendering improvement, not zero jank under all playback loads.",
+  "frameProfiles": {
+    "baseline": {
+      "frames": 246,
+      "missedDeadline": 164,
+      "totalP50Ms": 31.57062,
+      "totalP95Ms": 44.788136,
+      "totalMaxMs": 75.912142,
+      "drawP95Ms": 30.298385,
+      "drawMaxMs": 65.787708,
+      "scope": "8 isolated same-direction swipes; actual Window FrameMetrics; synthetic queue metadata; no audio/network queue mutation"
+    },
+    "gpu": {
+      "frames": 371,
+      "missedDeadline": 5,
+      "totalP50Ms": 7.380229,
+      "totalP95Ms": 8.498768,
+      "totalMaxMs": 124.848625,
+      "drawP95Ms": 2.010469,
+      "drawMaxMs": 3.820312,
+      "scope": "8 isolated same-direction swipes; actual Window FrameMetrics; synthetic queue metadata; no audio/network queue mutation"
+    },
+    "optimized": {
+      "frames": 352,
+      "missedDeadline": 6,
+      "totalP50Ms": 6.786208,
+      "totalP95Ms": 8.349532,
+      "totalMaxMs": 18.37556,
+      "drawP95Ms": 2.120208,
+      "drawMaxMs": 4.063125,
+      "sampleColumns": "total,draw,deadline,dropped,unknownDelay,sync,commandIssue,swapBuffers,gpu; duration in ms",
+      "scope": "8 isolated same-direction swipes; actual Window FrameMetrics; synthetic queue metadata; no audio/network queue mutation"
+    }
+  }
+}

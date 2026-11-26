@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-14",
+  "installed": true,
+  "capsuleBounds": [
+    675.5,
+    1535,
+    855.5,
+    1905
+  ],
+  "artworkBounds": [
+    701,
+    1560.5,
+    830,
+    1689.5
+  ],
+  "playGlyphPositionUnchanged": true,
+  "tapRegions": {
+    "upper": "expand",
+    "lower": "play/pause"
+  },
+  "suites": {
+    "morph": 11,
+    "capsule-drag-native": 13,
+    "rubber-navigation": 19
+  },
+  "visual": [
+    "vertical-playback-capsule.png",
+    "vertical-capsule-opening.png"
+  ],
+  "verified": [
+    "cover above playback glyph",
+    "unchanged playback glyph coordinates",
+    "cover tap expands full player",
+    "mini play/pause responds",
+    "reversible horizontal/upward expansion",
+    "shared collapse/expansion destinations",
+    "navigation interactions retained"
+  ],
+  "active": false,
+  "status": "Reverted at user request; horizontal equal-size capsules restored."
+}

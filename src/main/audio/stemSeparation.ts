@@ -1,12 +1,14 @@
 import { join } from 'node:path';
+import { spawn } from 'node:child_process';
+import ffmpeg from 'ffmpeg-static';
 import { Worker } from 'node:worker_threads';
 
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, dialog } from 'electron';
 import type { WebContents } from 'electron';
 
 import { MSS_BATCH, MSS_LATENCY, MSS_SAMPLE_RATE } from '../../common/colorosMss';
 import type { MssPacket, MssResult, MssRuntimeInfo, MssTrack } from '../../common/colorosMss';
-import { MssTrackCache } from './colorosMssCache';
+import { mssSource, MssTrackCache } from './colorosMssCache';
 
 export class ColorOSMssSession {
   private worker: Worker | null = null;
@@ -186,9 +188,42 @@ export function initializeStemSeparationIPC(sender: WebContents) {
     )
       throw new Error('Invalid MSS track');
   };
+  let currentTrack: MssTrack | null = null;
+  let exporting = false;
+  ipcMain.handle('mss/export', async (event, kind: string) => {
+    guard(event.sender);
+    if (!['original', 'vocals', 'accompaniment'].includes(kind) || !currentTrack)
+      throw new Error('请先播放一首音乐');
+    if (exporting) throw new Error('正在下载，请稍候');
+    exporting = true;
+    try {
+      const track = { ...currentTrack };
+      const prepared = cache.getPrepared(track.songId, track.quality, track.path);
+      if (kind !== 'original' && !prepared) throw new Error('请先开启分轨，等待当前歌曲分轨完成后再下载');
+      const label = kind === 'original' ? '原声' : kind === 'vocals' ? '人声' : '伴奏';
+      const result = await dialog.showSaveDialog({
+        defaultPath: `${track.title.replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')}-${label}.wav`,
+        filters: [{ name: 'WAV 音频', extensions: ['wav'] }]
+      });
+      if (result.canceled || !result.filePath) return false;
+      const source = mssSource(kind === 'original' ? track.path : prepared!.url);
+      const args = ['-nostdin', '-y', '-i', source];
+      if (kind !== 'original') args.push('-af', kind === 'vocals'
+        ? 'pan=stereo|c0=c2|c1=c3'
+        : 'pan=stereo|c0=c0-c2|c1=c1-c3');
+      args.push('-vn', '-c:a', 'pcm_s16le', '-f', 'wav', result.filePath);
+      await new Promise<void>((resolve, reject) => {
+        const child = spawn(ffmpeg!.replace('app.asar', 'app.asar.unpacked'), args, { windowsHide: true, stdio: 'ignore' });
+        child.once('error', reject);
+        child.once('exit', code => code === 0 ? resolve() : reject(new Error('下载失败，请检查音频来源与保存位置')));
+      });
+      return true;
+    } finally { exporting = false; }
+  });
   ipcMain.handle('mss/current', (event, track: MssTrack) => {
     guard(event.sender);
     validateTrack(track);
+    currentTrack = track;
     return cache.setCurrent(track);
   });
   ipcMain.handle('mss/next', (event, track: MssTrack | null) => {

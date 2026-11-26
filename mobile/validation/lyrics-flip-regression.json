@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-13",
+  "installed": true,
+  "suites": {
+    "lyric-flip": 8,
+    "track-depth": 46,
+    "full-pull": 17
+  },
+  "verified": [
+    "500ms hold threshold",
+    "perspective flip to lyrics and back",
+    "move/cancel prevent deferred flip",
+    "LRC timestamps parsed",
+    "real read-only NetEase lyric response returned text",
+    "existing track and collapse gestures retained"
+  ],
+  "visual": "lyrics-card-back.png",
+  "scope": "Synthetic lyric rendering and isolated playback callbacks; public lyric endpoint read succeeded; no user queue/favorite writes."
+}

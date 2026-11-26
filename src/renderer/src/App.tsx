@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 
 import './assets/styles/styles.css';
 import './components/Volo/volo.css';
+import './components/Volo/paper.css';
+import './components/Volo/paper-player.css';
 import 'material-symbols/rounded.css';
 import ContextMenu from './components/ContextMenu/ContextMenu';
 // ? MAIN APP COMPONENTS

@@ -1,0 +1,745 @@
+/* Static generated enamel and alpha plastic assets; only the two small hubs rotate. */
+.tape-shell {
+  background: #ded9cc url('../../assets/tape/chassis-green-v1.webp') center / cover;
+  border: 3px solid #a39e91;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 2px #fff7,
+    inset 0 0 14px #49453630;
+  padding: 0;
+  isolation: isolate;
+}
+.volo-titlebar {
+  gap: 14px;
+  height: 62px;
+  padding: 0 22px;
+}
+.tape-shell .volo-titlebar {
+  border-bottom: 2px solid #aca798;
+  box-shadow: 0 1px 0 #fff9;
+}
+.titlebar-page-keys {
+  display: flex;
+  gap: 10px;
+  -webkit-app-region: no-drag;
+}
+.titlebar-actions {
+  margin-left: auto;
+}
+.tape-shell .window-controls-container {
+  gap: 3px;
+}
+.tape-shell .window-controls-container button {
+  background: linear-gradient(#eee8db, #d4cdbc) !important;
+  border: 1px solid #999382 !important;
+  border-bottom: 2px solid #87816f !important;
+  border-radius: 4px !important;
+  box-shadow: inset 0 1px 0 #fff9;
+}
+.volo-shell .deck-key {
+  flex-direction: row;
+  min-width: 52px;
+  height: 43px;
+  padding: 8px 15px;
+  border: 1px solid #8d8879;
+  border-bottom: 3px solid #777263;
+  background: linear-gradient(#f7f2e7, #d8d1c0);
+  border-radius: 7px;
+  color: #30372d;
+  box-shadow:
+    inset 0 0 0 2px #fff6,
+    0 2px 3px #36332536;
+}
+.volo-shell .deck-key .material-icons-round {
+  font-size: 25px;
+}
+.volo-shell .deck-key.play-key {
+  background: linear-gradient(#cc7245, #b44e2d);
+  color: #fff6e5;
+  border-color: #8b3b20;
+}
+.volo-shell .deck-key.selected:not(.play-key) {
+  color: #a23f21;
+  border-bottom-color: #a23f21;
+  background: linear-gradient(#e7d8c6, #d7c2aa);
+}
+.volo-shell .deck-key:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.tape-player-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.machine-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 76px;
+  gap: 12px;
+  padding: 18px 28px 6px;
+}
+.tape-chamber {
+  container-type: size;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+.tape-object {
+  position: relative;
+  height: auto;
+  width: min(100%, calc(100cqh * 1.6479));
+  aspect-ratio: 1610 / 977;
+  max-width: 100%;
+  max-height: 100%;
+  border: 8px solid #3e4133;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at center, #33372d, #191c16);
+  box-shadow:
+    inset 0 2px 6px #000b,
+    0 0 0 2px #b6b39d,
+    0 0 0 5px #737262,
+    0 3px 7px #24261755;
+}
+.tape-artwork {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tape-plastic {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  z-index: 5;
+}
+.tape-song-label {
+  position: absolute;
+  top: 17%;
+  left: 14%;
+  right: 14%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: center;
+  z-index: 2;
+  padding: 7px 12px;
+  background: #f1e9d4df;
+  border-radius: 2px;
+  color: #242a24;
+}
+.tape-song-label strong {
+  font-size: clamp(16px, 2.5vw, 28px);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tape-song-label span {
+  font-size: clamp(10px, 1.4vw, 16px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tape-reels {
+  position: absolute;
+  top: 44%;
+  left: 21%;
+  right: 21%;
+  height: 30%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 3;
+}
+.tape-spool {
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle, #201e18 0 2px, #353025 3px 4px, #201e18 5px 7px);
+  box-shadow:
+    0 0 0 2px #91867170,
+    inset 0 0 8px #000;
+  display: grid;
+  place-items: center;
+}
+.reel-hub {
+  position: relative;
+  width: 62%;
+  height: 62%;
+  border: 6px solid #dfd4b9;
+  border-radius: 50%;
+  background: repeating-conic-gradient(#24241c 0deg 30deg, #d9cbae 30deg 60deg);
+  box-shadow:
+    inset 0 0 0 3px #9f947c,
+    0 2px 5px #0008;
+  animation: tape-reel-turn 7s linear infinite;
+  animation-play-state: paused;
+}
+.reel-hub::after {
+  content: '';
+  position: absolute;
+  inset: 32%;
+  border: 3px solid #76715e;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #6c6854, #181b13);
+}
+.tape-object[data-reels-running='true'] .reel-hub {
+  animation-play-state: running;
+}
+.tape-thread {
+  position: absolute;
+  z-index: 2;
+  top: 60%;
+  left: 33%;
+  width: 34%;
+  height: 2px;
+  background: #854324;
+  box-shadow: 0 1px 1px #000;
+}
+@keyframes tape-reel-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lcd-window {
+  width: min(760px, 80%);
+  margin: 0 auto;
+  min-width: 0;
+  border: 7px solid #37392d;
+  border-radius: 7px;
+  padding: 6px 15px;
+  background: linear-gradient(110deg, #8e9580, #a0a58d 52%, #8f957f);
+  color: #2e3828;
+  box-shadow:
+    inset 0 2px 5px #222a1870,
+    0 0 0 2px #aaa895,
+    0 0 0 4px #777766;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.lcd-window p {
+  margin: 0;
+  font:
+    500 clamp(14px, 2vw, 22px)/1.25 'Courier New',
+    'Microsoft YaHei',
+    monospace;
+  letter-spacing: 2px;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 1px 0 #35412a44;
+}
+.lcd-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font: 9px/1.4 monospace;
+  margin-top: 4px;
+  opacity: 0.7;
+}
+.lcd-status span {
+  margin-left: auto;
+}
+.lcd-status i {
+  width: 5px;
+  height: 5px;
+  background: #57614d;
+  border: 1px solid #36402b;
+}
+.lcd-status i.lcd-playing {
+  background: #293922;
+}
+.machine-controls {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(270px, 2fr) minmax(130px, 1fr);
+  gap: 20px;
+  align-items: center;
+  padding: 12px 4% 13px;
+  flex: none;
+}
+.machine-keys {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.main-transport,
+.auxiliary-keys {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+.main-transport .deck-key {
+  min-width: 86px;
+  height: 58px;
+}
+.main-transport .deck-key.play-key {
+  min-width: 120px;
+}
+.main-transport .deck-key .material-icons-round {
+  font-size: 32px;
+}
+.auxiliary-keys .deck-key {
+  min-width: 47px;
+  height: 36px;
+  padding: 6px 10px;
+}
+.auxiliary-keys .deck-key .material-icons-round {
+  font-size: 20px;
+}
+.machine-fader {
+  width: min(180px, 100%);
+  justify-self: center;
+  min-width: 0;
+  position: relative;
+  padding-bottom: 10px;
+}
+.fader-caption {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  font-size: 13px;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.stem-power {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #9b9586;
+  border-radius: 4px;
+  color: #3a3e31;
+  background: linear-gradient(#eee8dc, #cfc7b6);
+  cursor: pointer;
+}
+.stem-power .material-icons-round {
+  font-size: 18px;
+}
+.stem-power.enabled {
+  color: #a34323;
+  box-shadow: inset 0 0 0 1px #c4633c;
+}
+.machine-fader input {
+  width: 100%;
+  margin: 0;
+  height: 32px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+.machine-fader input::-webkit-slider-runnable-track {
+  height: 13px;
+  background: linear-gradient(#171b13, #515548);
+  border: 1px solid #a8a38f;
+  border-radius: 8px;
+  box-shadow:
+    inset 0 2px 4px #0008,
+    0 1px 0 #fff9;
+}
+.machine-fader input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 21px;
+  height: 36px;
+  margin-top: -13px;
+  background: linear-gradient(90deg, #c4bdaa, #f0e8d9 30%, #e6decb 60%, #b8b09b);
+  border: 1px solid #7c7865;
+  border-radius: 4px;
+  box-shadow:
+    0 2px 4px #0006,
+    inset 0 0 0 2px #f8f1df77;
+}
+.machine-fader input:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.fader-endpoints {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #4c5140;
+}
+.fader-status {
+  position: absolute;
+  top: 100%;
+  left: -15%;
+  width: 130%;
+  text-align: center;
+  font-size: 9px;
+  color: #666451;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.machine-progress {
+  border-top: 2px solid #aaa393;
+  box-shadow: 0 -1px 0 #ffffff80;
+  padding: 15px 6% 18px;
+  flex: none;
+}
+.machine-progress .deck-progress {
+  margin: 0;
+  color: #424636;
+  font: 13px/1.4 monospace;
+  gap: 20px;
+}
+.machine-progress .deck-progress input {
+  height: 24px;
+  accent-color: #b95d35;
+}
+.now-playing-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  margin: 14px 0;
+  padding: 10px 14px;
+  border: 1px solid var(--v-line);
+  border-radius: 8px;
+  background: var(--v-panel);
+}
+.now-playing-track {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--v-text);
+  text-align: left;
+}
+.now-playing-track > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.now-playing-track strong,
+.now-playing-track small {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.now-playing-track small {
+  color: var(--v-muted);
+  font-size: 11px;
+}
+.tape-page-loading {
+  flex: 1;
+  display: grid;
+  place-items: center;
+}
+.full-lyrics {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.full-lyrics button {
+  background: transparent;
+  border: 0;
+  color: var(--v-muted);
+  font: inherit;
+  text-align: center;
+  padding: 8px;
+}
+.full-lyrics button[aria-current='true'] {
+  color: var(--v-accent);
+  font-weight: 600;
+}
+.tape-detail-dialog {
+  position: absolute;
+  right: 24px;
+  top: 85px;
+  width: min(380px, calc(100vw - 48px));
+  max-height: calc(100dvh - 290px) !important;
+}
+:root[data-volo-theme='dark'] .tape-shell {
+  background-image:
+    linear-gradient(#1e241de3, #1e241de3), url('../../assets/tape/chassis-green-v1.webp');
+  border-color: #666a5c;
+  color: #e6e1d1;
+}
+:root[data-volo-theme='dark'] .tape-shell .volo-titlebar {
+  border-color: #11170d;
+  box-shadow: 0 1px 0 #697055;
+}
+:root[data-volo-theme='dark'] .machine-fader .fader-endpoints,
+:root[data-volo-theme='dark'] .machine-progress .deck-progress,
+:root[data-volo-theme='dark'] .fader-status {
+  color: #c7c9b5;
+}
+@media (max-width: 760px) {
+  .volo-titlebar {
+    padding: 0 12px;
+    gap: 8px;
+    height: 54px;
+  }
+  .volo-wordmark {
+    font-size: 27px;
+  }
+  .titlebar-page-keys {
+    gap: 6px;
+  }
+  .titlebar-actions {
+    gap: 5px;
+  }
+  .volo-shell .titlebar-page-keys .deck-key,
+  .volo-shell .account-trigger {
+    min-width: 40px;
+    height: 35px;
+    padding: 5px 8px;
+  }
+  .machine-controls {
+    gap: 10px;
+    grid-template-columns: minmax(95px, 1fr) 250px minmax(95px, 1fr);
+    padding: 12px 3%;
+  }
+  .main-transport .deck-key {
+    min-width: 68px;
+    height: 49px;
+  }
+  .main-transport .deck-key.play-key {
+    min-width: 94px;
+  }
+  .auxiliary-keys {
+    gap: 5px;
+  }
+  .auxiliary-keys .deck-key {
+    min-width: 38px;
+    padding: 5px;
+  }
+  .machine-fader {
+    width: 120px;
+  }
+  .lcd-window {
+    width: 90%;
+  }
+  .machine-stage {
+    padding: 15px 20px 4px;
+  }
+}
+@media (max-height: 640px) {
+  .volo-titlebar {
+    height: 48px;
+  }
+  .machine-stage {
+    grid-template-rows: minmax(0, 1fr) 55px;
+    padding-top: 12px;
+    gap: 10px;
+  }
+  .lcd-window {
+    padding: 3px 12px;
+    border-width: 5px;
+  }
+  .lcd-window p {
+    font-size: 14px;
+  }
+  .lcd-status {
+    font-size: 8px;
+    margin-top: 2px;
+  }
+  .machine-controls {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .machine-keys {
+    gap: 7px;
+  }
+  .main-transport .deck-key {
+    height: 42px;
+  }
+  .auxiliary-keys .deck-key {
+    height: 31px;
+  }
+  .machine-progress {
+    padding: 9px 6% 12px;
+  }
+  .tape-song-label {
+    padding: 4px;
+  }
+  .tape-song-label strong {
+    font-size: 14px;
+  }
+  .tape-song-label span {
+    font-size: 10px;
+  }
+  .tape-detail-dialog {
+    top: 58px;
+    max-height: calc(100dvh - 230px) !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-hub {
+    animation: none !important;
+  }
+}
+
+.tape-shell .volo-toast {
+  top: 74px;
+  right: 18px;
+  bottom: auto;
+  left: auto;
+  transform: none;
+  max-width: min(400px, 65%);
+}
+.machine-progress input {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+}
+.machine-progress input::-webkit-slider-runnable-track {
+  height: 10px;
+  border: 1px solid #948f7c;
+  border-radius: 7px;
+  background: linear-gradient(
+    to right,
+    #ba5e39 0 var(--play-progress, 0%),
+    #515446 var(--play-progress, 0%) 100%
+  );
+  box-shadow:
+    inset 0 1px 3px #0005,
+    0 1px 0 #fff9;
+}
+.machine-progress input::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 20px;
+  width: 20px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 1px solid #777b64;
+  background: radial-gradient(circle at 40% 30%, #f3eddd, #c3bfaa);
+  box-shadow: 0 2px 3px #0004;
+}
+.lcd-window p {
+  background: radial-gradient(circle, #293426 0 0.8px, #29342699 0.8px 1px, transparent 1.2px) 0 0 /
+    2px 2px;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+@media (forced-colors: active) {
+  .lcd-window p {
+    background: none;
+    color: CanvasText;
+  }
+}
+
+/* Generated, shared material faces; icons and real input states stay independent. */
+.tape-shell {
+  background-color: #929f75;
+  border-color: #566348;
+  color: #273122;
+}
+.tape-shell .volo-titlebar {
+  border-color: #59684a;
+  box-shadow: 0 1px 0 #d9e0b966;
+}
+.tape-shell .fader-endpoints,
+.tape-shell .fader-status,
+.tape-shell .machine-progress .deck-progress {
+  color: #263320;
+}
+.tape-shell .machine-progress {
+  border-color: #657353;
+  box-shadow: 0 -1px 0 #d9e0b966;
+}
+.volo-shell button,
+.volo-modal button,
+.volo-shell .deck-key,
+.volo-shell .deck-key.play-key,
+.volo-shell .stem-power,
+.tape-shell .window-controls-container button {
+  --key-face: url('../../assets/tape/key-ivory-v1.webp');
+  border-image-source: var(--key-face);
+  border-image-slice: 26 fill;
+  border-image-width: 7px;
+  border-image-repeat: stretch;
+  background: #ded4b7;
+  color: #30372d;
+}
+.volo-shell .deck-key,
+.volo-shell .stem-power,
+.volo-shell .plain-button,
+.volo-shell .icon-button,
+.volo-shell .source-tabs button {
+  background: #ded4b7;
+  box-shadow: 0 2px 2px #17201345;
+}
+.volo-shell .deck-key.play-key,
+.volo-shell .plain-button.accent {
+  --key-face: url('../../assets/tape/key-orange-v1.webp');
+  background: #c36b30;
+  color: #fff6e5;
+}
+.volo-shell .deck-key.selected:not(.play-key),
+.volo-shell .stem-power.enabled,
+.volo-shell .source-tabs button.active {
+  color: #9b371a;
+  box-shadow:
+    0 2px 2px #17201345,
+    0 0 0 2px #a94927;
+}
+.volo-shell button:active:not(:disabled),
+.volo-modal button:active:not(:disabled) {
+  translate: 0 1px;
+}
+.volo-shell button:focus-visible,
+.volo-modal button:focus-visible {
+  outline: 2px solid #af4925;
+  outline-offset: 3px;
+}
+.tape-shell .window-controls-container button {
+  background: #ded4b7 !important;
+  color: #30372d !important;
+  border-image: url('../../assets/tape/key-ivory-v1.webp') 26 fill / 7px / 0 stretch !important;
+}
+.tape-spool {
+  background: url('../../assets/tape/tape-winding-v1.webp') center / contain no-repeat;
+  box-shadow: none;
+}
+.reel-hub {
+  border: 0;
+  background: url('../../assets/tape/reel-hub-v1.webp') center / contain no-repeat;
+  box-shadow: none;
+}
+.reel-hub::after {
+  content: none;
+}
+.tape-thread {
+  background: #543525 url('../../assets/tape/tape-winding-v1.webp') center / 120px 120px;
+}
+.machine-fader input::-webkit-slider-thumb,
+.machine-progress input::-webkit-slider-thumb {
+  background: #ded4b7 url('../../assets/tape/key-ivory-v1.webp') center / 100% 100%;
+}
+:root[data-volo-theme='dark'] .tape-shell {
+  background-image:
+    linear-gradient(#192817b0, #192817b0), url('../../assets/tape/chassis-green-v1.webp');
+}
+.auxiliary-right details { position: relative; }
+.auxiliary-right summary { cursor: pointer; list-style: none; padding: 8px; background: #d4cba9; color: #303c33; border: 1px solid #a69c7a; }
+.auxiliary-right details[open] .deck-extra { position: absolute; z-index: 30; bottom: 48px; right: 0; width: 280px; padding: 16px; background: #d4cba9; color: #303c33; border: 2px solid #80795f; box-shadow: 0 6px 20px #0005; }
+.auxiliary-right details .extra-heading { display: grid; gap: 8px; margin-bottom: 12px; }
+.auxiliary-right details .plain-button { padding: 8px 12px; cursor: pointer; }

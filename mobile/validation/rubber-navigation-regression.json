@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-14",
+  "installed": true,
+  "implementation": "Native Canvas/ValueAnimator adaptation of user supplied React Bits RubberSegment JavaScript/CSS",
+  "icons": "variant 2: sparkle and rounded profile badge",
+  "visibleLabels": false,
+  "suites": {
+    "rubber-navigation": 19,
+    "full-pull": 17
+  },
+  "visual": [
+    "rubber-navigation-discover.png",
+    "rubber-navigation-stretch.png",
+    "rubber-navigation-personal.png"
+  ],
+  "verified": [
+    "immediate page routing",
+    "thumb dilation across both slots",
+    "spring handoff and squash endpoint",
+    "continuous rapid reversal",
+    "external selection synchronization",
+    "drag without early page commit",
+    "cancel restores committed page",
+    "drag release snapping",
+    "short flick projection",
+    "overdrag rubber resistance",
+    "disabled input",
+    "keyboard navigation",
+    "accessible checked-radio semantics",
+    "48dp touch targets including compact layout",
+    "full-player to mini-player flow"
+  ],
+  "scope": "Native Android implementation; the pasted React component is a motion reference, not an imported React runtime. No account/queue mutations in tests."
+}

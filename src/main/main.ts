@@ -166,7 +166,7 @@ const APP_INFO = {
   }
 };
 
-logger.debug(`Starting up Volo`, { APP_INFO });
+logger.debug(`Starting up Doto`, { APP_INFO });
 
 export const getBackgroundColor = async () => {
   const { isDarkMode } = await getUserSettings();
@@ -229,7 +229,7 @@ const createWindow = async () => {
     height: 700,
     minHeight: 500,
     minWidth: 700,
-    title: 'Volo',
+    title: 'Doto',
     webPreferences: {
       zoomFactor: currentWindowZoomFactor,
       preload: path.join(app.getAppPath(), 'out/preload/index.mjs'),
@@ -320,11 +320,11 @@ app
     protocol.handle('nora', handleFileProtocol);
 
     tray = new Tray(appIcon);
-    tray.setToolTip('Volo');
+    tray.setToolTip('Doto');
     tray.setContextMenu(
       Menu.buildFromTemplate([
         {
-          label: '打开 Volo',
+          label: '打开 Doto',
           click: () => {
             mainWindow.show();
             mainWindow.focus();
@@ -530,7 +530,7 @@ async function handleBeforeQuit() {
       mainWindow.webContents.send('app/beforeQuitEvent');
       await closeDatabaseInstance();
 
-      logger.debug(`Quitting Volo`, { uptime: `${Math.floor(process.uptime())} seconds` });
+      logger.debug(`Quitting Doto`, { uptime: `${Math.floor(process.uptime())} seconds` });
       asyncOperationDone = true;
     } catch (error) {
       asyncOperationDone = true;
@@ -937,7 +937,7 @@ export async function toggleAutoLaunch(autoLaunchState: boolean) {
 
   app.setLoginItemSettings({
     openAtLogin: autoLaunchState,
-    name: 'Volo',
+    name: 'Doto',
     openAsHidden: openWindowAsHiddenOnSystemStart
   });
 

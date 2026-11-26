@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-14",
+  "installed": true,
+  "suites": {
+    "stem-handoff": 38,
+    "service-integration": 39
+  },
+  "trace": "stem-handoff-trace.json",
+  "sampledFrames": 263,
+  "roundTripSwitches": 6,
+  "allSamplesPlaying": true,
+  "durationValues": 1,
+  "minimumPositionDeltaMs": 0,
+  "maximumDeltaBeyondElapsedMs": 22,
+  "coverage": [
+    "MediaPlayer round trips",
+    "latest rapid selection",
+    "pause during preparation",
+    "candidate failure preserves active output",
+    "seek cancels stale handoff",
+    "growing PCM handoff",
+    "producer frontier return",
+    "cancelled producer stale callback",
+    "queue-step cancellation",
+    "real separation preview and automatic completion"
+  ],
+  "limitation": "Local PCM fixtures and real service state/position checks; no acoustic loopback or sample-accurate gap measurement. Network delay keeps the current output until the next output is ready."
+}

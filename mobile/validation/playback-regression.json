@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-13",
+  "device": "PKR110",
+  "api": 36,
+  "runner": "com.volo.mobile.PlaybackInstrumentation",
+  "result": "PASS",
+  "checks": 34,
+  "instrumentationCode": -1,
+  "actualModelPartialPlayback": true,
+  "input": "10-second benchmark WAV",
+  "limits": ["Not a real-song listening evaluation", "Original audio is decoded before separation", "No layout changes"]
+}

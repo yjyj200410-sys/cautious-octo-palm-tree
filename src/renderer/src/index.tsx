@@ -45,7 +45,7 @@ export const router = createRouter({
         className="flex h-screen flex-col items-center justify-center gap-4"
         style={{ background: '#0a0a12' }}
       >
-        <img src={LuminaLogo} alt="Volo" className="h-20 w-20 opacity-80" />
+        <img src={LuminaLogo} alt="Doto" className="h-20 w-20 opacity-80" />
       </div>
     );
   },

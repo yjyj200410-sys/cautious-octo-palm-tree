@@ -7,17 +7,16 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
   type ReactNode
 } from 'react';
-import { Virtuoso } from 'react-virtuoso';
+import { Virtuoso, type VirtuosoHandle, type StateSnapshot } from 'react-virtuoso';
 
 import { version } from '../../../../../package.json';
 import { AppUpdateContext } from '../../contexts/AppUpdateContext';
 import { useNcmUser } from '../../contexts/NcmUserContext';
-import { LyricsStore, type LyricsState } from '../../hooks/LyricsStore';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
 import { proxyCoverUrl } from '../../ncm';
 import { PlaybackBridge } from '../../ncm/playback/PlaybackBridge';
@@ -29,6 +28,11 @@ import storage from '../../utils/localStorage';
 import { FavoriteService } from '../../utils/unifiedStorage';
 import ManagementDialog from '../ManagementDialog';
 import WindowControlsContainer from '../TitleBar/WindowControlsContainer';
+import { PaperRecent, rememberTrack } from './PaperRecent';
+import { NowPlayingBar } from './NowPlayingBar';
+import { Icon, Key } from './PlaybackControls';
+
+const TapePlayerPage = lazy(() => import('./TapePlayerPage'));
 
 const LoginDialog = lazy(() => import('../LoginDialog/LoginDialog'));
 type Tab = 'favorites' | 'recommend' | 'local';
@@ -44,43 +48,6 @@ const identity = (id: number) => ({
   sourceId: String(Math.abs(id))
 });
 
-export function Icon({ name }: { name: string }) {
-  return (
-    <span className="material-icons-round" aria-hidden="true">
-      {name}
-    </span>
-  );
-}
-function Key({
-  label,
-  icon,
-  onClick,
-  active = false,
-  disabled = false,
-  className = ''
-}: {
-  label: string;
-  icon: string;
-  onClick: () => void;
-  active?: boolean;
-  disabled?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      className={`deck-key ${active ? 'selected' : ''} ${className}`}
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-      aria-pressed={active}
-      disabled={disabled}
-    >
-      <Icon name={icon} />
-      <span>{label}</span>
-    </button>
-  );
-}
 function Cover({ src, className = '' }: { src?: string; className?: string }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [src]);
@@ -94,348 +61,6 @@ function Cover({ src, className = '' }: { src?: string; className?: string }) {
     </div>
   );
 }
-
-const PlaybackProgress = memo(function PlaybackProgress() {
-  const player = useAudioPlayer();
-  const duration = useStore(store, (s) => s.currentSongData.duration);
-  const { updateSongPosition } = useContext(AppUpdateContext);
-  const [position, setPosition] = useState(player.currentTime || 0);
-  const dragging = useRef(false);
-  useEffect(() => {
-    const update = () => {
-      if (!document.hidden && !dragging.current) setPosition(player.currentTime || 0);
-    };
-    for (const e of ['timeupdate', 'loadedmetadata', 'seeked', 'emptied'])
-      player.audio.addEventListener(e, update);
-    document.addEventListener('visibilitychange', update);
-    return () => {
-      for (const e of ['timeupdate', 'loadedmetadata', 'seeked', 'emptied'])
-        player.audio.removeEventListener(e, update);
-      document.removeEventListener('visibilitychange', update);
-    };
-  }, [player]);
-  return (
-    <div className="deck-progress">
-      <time>{time(position)}</time>
-      <input
-        aria-label="播放进度"
-        type="range"
-        min="0"
-        max={duration || 1}
-        step="0.1"
-        value={Math.min(position, duration || 1)}
-        disabled={!duration}
-        onPointerDown={(e) => {
-          dragging.current = true;
-          e.currentTarget.setPointerCapture(e.pointerId);
-        }}
-        onPointerUp={() => {
-          dragging.current = false;
-          updateSongPosition(position);
-        }}
-        onPointerCancel={() => {
-          dragging.current = false;
-          setPosition(player.currentTime || 0);
-        }}
-        onChange={(e) => {
-          const value = Number(e.target.value);
-          setPosition(value);
-          if (!dragging.current) updateSongPosition(value);
-        }}
-      />
-      <time>{time(duration)}</time>
-    </div>
-  );
-});
-
-function StemPanel() {
-  const { stemSeparation: stem } = useAudioPlayer();
-  const state = useSyncExternalStore(stem.subscribe, stem.getSnapshot);
-  return (
-    <div className="deck-extra stem-panel">
-      <div className="extra-heading">
-        <div>
-          <strong>音频分轨</strong>
-          <p>分别调整人声与伴奏</p>
-        </div>
-        <button
-          className={`plain-button ${state.enabled ? 'accent' : ''}`}
-          onClick={() => void stem.setEnabled(!state.enabled)}
-          disabled={state.loading}
-          aria-pressed={state.enabled}
-        >
-          {state.loading ? '准备中…' : state.enabled ? '关闭分轨' : '开启分轨'}
-        </button>
-      </div>
-      <div className="stem-sliders">
-        {(['vocals', 'accompaniment'] as const).map((key) => (
-          <label key={key}>
-            <span>
-              {key === 'vocals' ? '人声' : '伴奏'}
-              <b>{state[key]}%</b>
-            </span>
-            <input
-              type="range"
-              min="0"
-              max={key === 'vocals' ? 150 : 100}
-              value={state[key]}
-              disabled={!state.enabled || state.loading}
-              onChange={(e) =>
-                stem.setMix(
-                  key === 'vocals' ? Number(e.target.value) : state.vocals,
-                  key === 'accompaniment' ? Number(e.target.value) : state.accompaniment
-                )
-              }
-            />
-          </label>
-        ))}
-      </div>
-      <p className="status-text" role="status">
-        {state.error ||
-          state.cacheError ||
-          (state.enabled
-            ? state.cached
-              ? '已使用分轨缓存'
-              : state.currentPreparing
-                ? `正在准备当前歌曲 · ${state.currentProgress}%`
-                : '实时分轨已开启'
-            : '关闭时释放处理任务，正常播放原始音频')}
-      </p>
-    </div>
-  );
-}
-function LyricsPanel() {
-  const [lyrics, setLyrics] = useState<LyricsState>(LyricsStore.getState);
-  useEffect(() => {
-    LyricsStore.start();
-    const unsubscribe = LyricsStore.subscribe(setLyrics);
-    return () => {
-      unsubscribe();
-      LyricsStore.stop();
-    };
-  }, []);
-  return (
-    <div className="deck-extra lyrics-panel">
-      <span className="eyebrow">歌词</span>
-      <p>{lyrics.line?.text || (lyrics.lines.length ? '等待歌词开始' : '暂无歌词')}</p>
-    </div>
-  );
-}
-function QueueRow({ ids, index }: { ids: number[]; index: number }) {
-  const controls = useContext(AppUpdateContext);
-  const group = ids.slice(Math.floor(index / 40) * 40, (Math.floor(index / 40) + 1) * 40);
-  const { data } = useQuery({
-    queryKey: ['volo', 'queue-chunk', group],
-    queryFn: async () => {
-      const localIds = group.filter((id) => id > 0);
-      const local = localIds.length
-        ? await window.api.audioLibraryControls.getSongInfo(
-            localIds,
-            undefined,
-            undefined,
-            undefined,
-            true
-          )
-        : [];
-      const online = await Promise.all(
-        group.filter((id) => id < 0).map((id) => window.api.ncm.getSong(id))
-      );
-      return [...(local || []), ...online.filter(Boolean)] as Song[];
-    },
-    staleTime: 60_000,
-    gcTime: 60_000
-  });
-  const song = data?.find((item) => item.songId === ids[index]);
-  return (
-    <button
-      className="queue-row"
-      disabled={!song}
-      onClick={() => song && void controls.playSong(song.songId, true)}
-    >
-      <span className="track-number">{index + 1}</span>
-      <span>
-        {song?.title || '正在读取歌曲…'}
-        <small>{song && artist(song)}</small>
-      </span>
-      <Icon name="play_arrow" />
-    </button>
-  );
-}
-function QueuePanel() {
-  const player = useAudioPlayer();
-  useStore(store, (s) => s.localStorage.queue);
-  const ids = player.queue.getAllSongIds();
-  return (
-    <div className="deck-extra queue-panel">
-      <div className="extra-heading">
-        <strong>播放队列</strong>
-        <span>{ids.length} 首</span>
-      </div>
-      <div className="queue-list">
-        <Virtuoso
-          totalCount={ids.length}
-          style={{ height: 180 }}
-          itemContent={(index) => <QueueRow ids={ids} index={index} />}
-        />
-      </div>
-      {!ids.length && <p>从列表选择一首音乐开始</p>}
-    </div>
-  );
-}
-
-const CassetteDeck = memo(function CassetteDeck() {
-  const song = useStore(store, (s) => s.currentSongData);
-  const playing = useStore(store, (s) => s.player.isCurrentSongPlaying);
-  const volume = useStore(store, (s) => s.player.volume);
-  const shuffle = useStore(store, (s) => s.player.isShuffling);
-  const repeat = useStore(store, (s) => s.player.isRepeating);
-  const c = useContext(AppUpdateContext);
-  const [panel, setPanel] = useState<'stem' | 'lyrics' | 'queue' | null>(null);
-  const togglePanel = (next: typeof panel) => setPanel((old) => (old === next ? null : next));
-  useEffect(() => {
-    const show = () => setPanel('queue');
-    window.addEventListener('open-queue-popup', show);
-    return () => window.removeEventListener('open-queue-popup', show);
-  }, []);
-  return (
-    <section className="cassette-deck" aria-label="磁带机播放控制">
-      <div className="deck-layout">
-        <div className="deck-caption">
-          <span className="eyebrow">VOLO / STEREO</span>
-          <h1>
-            让音乐
-            <br />
-            慢慢发生。
-          </h1>
-          <span className="deck-smallprint">选一首，听一会儿。</span>
-        </div>
-        <div className="cassette">
-          <i className="cassette-screw top-left" />
-          <i className="cassette-screw top-right" />
-          <i className="cassette-screw bottom-left" />
-          <i className="cassette-screw bottom-right" />
-          <div className="cassette-label">
-            <span className="side-mark">A</span>
-            <Cover src={song.artworkPath} />
-            <div className="cassette-track">
-              <strong title={song.title}>{song.title || '此刻，想听什么？'}</strong>
-              <span>{song.songId ? artist(song) : '你的下一首好音乐，正在这里等你'}</span>
-            </div>
-            <button
-              className={`icon-button like-button ${song.isAFavorite ? 'is-liked' : ''}`}
-              aria-label={song.isAFavorite ? '取消喜欢当前歌曲' : '喜欢当前歌曲'}
-              disabled={!song.songId}
-              onClick={() => c.toggleIsFavorite(!song.isAFavorite)}
-            >
-              <Icon name={song.isAFavorite ? 'favorite' : 'favorite_border'} />
-            </button>
-          </div>
-          <div className="tape-window" aria-hidden="true">
-            <div className="tape-reel">
-              <i />
-            </div>
-            <div className="tape-bridge">
-              <span>{playing ? 'PLAY' : 'PAUSE'}</span>
-              <b>TYPE I / NORMAL</b>
-            </div>
-            <div className="tape-reel">
-              <i />
-            </div>
-          </div>
-          <PlaybackProgress />
-          <div className="cassette-foot">
-            <span>VOLO C-60</span>
-            <span>HIGH FIDELITY · LOW DISTRACTION</span>
-            <span>STEREO</span>
-          </div>
-        </div>
-        <div className="deck-caption right">
-          <span className="eyebrow">只留下好音乐</span>
-          <div className={`status-light ${playing ? 'on' : ''}`} />
-          <span>{playing ? '正在播放' : '准备就绪'}</span>
-          <span className="deck-smallprint">NETEASE + LOCAL</span>
-        </div>
-      </div>
-      <div className="deck-controls">
-        <div className="transport">
-          <Key label="上一首" icon="skip_previous" onClick={c.handleSkipBackwardClick} />
-          <Key
-            label={playing ? '暂停' : '播放'}
-            icon={playing ? 'pause' : 'play_arrow'}
-            className="play-key"
-            onClick={() => c.toggleSongPlayback()}
-            active={playing}
-          />
-          <Key
-            label="下一首"
-            icon="skip_next"
-            onClick={() => c.handleSkipForwardClick('USER_SKIP')}
-          />
-        </div>
-        <div className="mode-controls">
-          <button
-            className={`icon-button ${shuffle ? 'is-active' : ''}`}
-            aria-label="随机播放"
-            title="随机播放"
-            aria-pressed={shuffle}
-            onClick={() => c.toggleShuffling()}
-          >
-            <Icon name="shuffle" />
-          </button>
-          <button
-            className={`icon-button ${repeat !== 'false' ? 'is-active' : ''}`}
-            aria-label={`循环模式：${repeat === 'repeat-1' ? '单曲' : repeat === 'repeat' ? '列表' : '关闭'}`}
-            title="切换循环模式"
-            onClick={() => c.toggleRepeat()}
-          >
-            <Icon name={repeat === 'repeat-1' ? 'repeat_one' : 'repeat'} />
-          </button>
-        </div>
-        <label className="deck-volume">
-          <button
-            className="icon-button"
-            aria-label={volume.isMuted ? '取消静音' : '静音'}
-            onClick={() => c.toggleMutedState()}
-          >
-            <Icon name={volume.isMuted ? 'volume_off' : 'volume_up'} />
-          </button>
-          <input
-            aria-label="音量"
-            type="range"
-            min="0"
-            max="100"
-            value={volume.value}
-            onChange={(e) => c.updateVolume(Number(e.target.value))}
-          />
-          <span>{volume.value}</span>
-        </label>
-        <div className="deck-tools">
-          <Key
-            label="歌词"
-            icon="notes"
-            onClick={() => togglePanel('lyrics')}
-            active={panel === 'lyrics'}
-          />
-          <Key
-            label="分轨"
-            icon="tune"
-            onClick={() => togglePanel('stem')}
-            active={panel === 'stem'}
-          />
-          <Key
-            label="队列"
-            icon="queue_music"
-            onClick={() => togglePanel('queue')}
-            active={panel === 'queue'}
-          />
-        </div>
-      </div>
-      {panel === 'stem' && <StemPanel />}
-      {panel === 'lyrics' && <LyricsPanel />}
-      {panel === 'queue' && <QueuePanel />}
-    </section>
-  );
-});
 
 const SongRow = memo(function SongRow({
   song,
@@ -575,11 +200,11 @@ function Settings({ onClose, onAddFolder }: { onClose: () => void; onAddFolder: 
     <Modal title="设置" onClose={onClose}>
       <div className="setting-row">
         <div>
-          <strong>深色机身</strong>
+          <strong>深色模式</strong>
           <p>浅色与深色使用同一套布局</p>
         </div>
         <input
-          aria-label="深色机身"
+          aria-label="深色模式"
           type="checkbox"
           checked={dark}
           onChange={(e) => setTheme(e.target.checked)}
@@ -676,7 +301,7 @@ function Settings({ onClose, onAddFolder }: { onClose: () => void; onAddFolder: 
         {error}
       </p>
       <div className="volo-version">
-        Volo {version}
+        Doto {version}
         <span>让音乐慢慢发生。</span>
       </div>
     </Modal>
@@ -687,8 +312,27 @@ export default function VoloPlayer() {
   const user = useNcmUser(),
     controls = useContext(AppUpdateContext),
     queryClient = useQueryClient();
-  const [tab, setTab] = useState<Tab>('favorites'),
-    [source, setSource] = useState<Source>('netease');
+  const [view, setView] = useState<'library' | 'player'>(() =>
+    localStorage.getItem('volo:view') === 'player' ? 'player' : 'library'
+  );
+  const [home, setHome] = useState(true);
+  const libraryActive = view === 'library';
+  const currentTrack = useStore(store, (s) => s.currentSongData);
+  const [recentVersion, setRecentVersion] = useState(0);
+  useEffect(() => { if (currentTrack.songId) { rememberTrack(currentTrack); setRecentVersion(n => n + 1); } }, [currentTrack.songId]);
+  const libraryRef = useRef<VirtuosoHandle>(null);
+  const librarySnapshot = useRef<{ key: string; state: StateSnapshot } | null>(null);
+  const showPlayer = () => {
+    libraryRef.current?.getState((state) => {
+      librarySnapshot.current = { key: listKey, state };
+    });
+    setView('player');
+  };
+  useEffect(() => {
+    localStorage.setItem('volo:view', view);
+  }, [view]);
+  const [tab, setTab] = useState<Tab>('local'),
+    [source, setSource] = useState<Source>('local');
   const [keyword, setKeyword] = useState(''),
     [term, setTerm] = useState(''),
     [sort, setSort] = useState<SongSortTypes>('aToZ');
@@ -719,19 +363,23 @@ export default function VoloPlayer() {
       }),
     [queryClient, user.activeUserId]
   );
+  const openSearch = useCallback(() => {
+    setView('library');
+    requestAnimationFrame(() => searchRef.current?.focus());
+  }, []);
+
   useEffect(() => {
-    const search = () => searchRef.current?.focus();
     const error = (e: Event) => setMessage((e as CustomEvent<string>).detail);
     const login = () => setLoginOpen(true);
-    window.addEventListener('open-home-search', search);
+    window.addEventListener('open-home-search', openSearch);
     window.addEventListener('volo-error', error);
     window.addEventListener('open-ncm-login', login);
     return () => {
-      window.removeEventListener('open-home-search', search);
+      window.removeEventListener('open-home-search', openSearch);
       window.removeEventListener('volo-error', error);
       window.removeEventListener('open-ncm-login', login);
     };
-  }, []);
+  }, [openSearch]);
   const localMode = term
     ? source === 'local'
     : tab === 'local' || (tab === 'favorites' && source === 'local');
@@ -741,7 +389,7 @@ export default function VoloPlayer() {
       (await window.api.audioLibraryControls.getAllSongIds(sort)).data
         .filter((s) => !s.isBlacklisted)
         .map((s) => s.id),
-    enabled: localMode && !term && tab === 'local',
+    enabled: libraryActive && localMode && !term && tab === 'local',
     gcTime: 60_000
   });
   const localFavorites = useQuery({
@@ -750,13 +398,13 @@ export default function VoloPlayer() {
       (await window.api.audioLibraryControls.getAllSongIds('aToZ', 'favorites')).data
         .filter((song) => !song.isBlacklisted)
         .map((song) => song.id),
-    enabled: localMode && tab === 'favorites' && !term,
+    enabled: libraryActive && localMode && tab === 'favorites' && !term,
     gcTime: 60_000
   });
   const localSearch = useQuery({
     queryKey: ['volo', 'local-search', term],
     queryFn: () => window.api.search.songIds(term),
-    enabled: localMode && !!term,
+    enabled: libraryActive && localMode && !!term,
     gcTime: 60_000
   });
   const favorites = useQuery({
@@ -765,7 +413,7 @@ export default function VoloPlayer() {
       const list = await NcmRepository.getUserLikedSongs(user.profile!.userId);
       return list;
     },
-    enabled: !localMode && !term && tab === 'favorites' && user.isLoggedIn,
+    enabled: libraryActive && !localMode && !term && tab === 'favorites' && user.isLoggedIn,
     staleTime: 5 * 60_000,
     gcTime: 60_000
   });
@@ -773,7 +421,7 @@ export default function VoloPlayer() {
     queryKey: ['volo', 'recommend', user.activeUserId],
     queryFn: () =>
       user.isLoggedIn ? NcmRepository.dailyRecommend() : NcmRepository.personalizedSongs(30),
-    enabled: !term && tab === 'recommend',
+    enabled: libraryActive && !term && tab === 'recommend',
     staleTime: 15 * 60_000,
     gcTime: 60_000
   });
@@ -793,7 +441,7 @@ export default function VoloPlayer() {
       last.songs.length && offset + last.songs.length < last.songCount
         ? offset + last.songs.length
         : undefined,
-    enabled: !!term && !localMode,
+    enabled: libraryActive && !!term && !localMode,
     gcTime: 60_000
   });
   const ids =
@@ -877,16 +525,32 @@ export default function VoloPlayer() {
           ? '今日，值得一听'
           : '发现下一首好音乐'
         : '本地音乐';
+  const listKey = `${tab}-${source}-${term}-${sort}-${user.activeUserId}-${count}`;
   const notifications = useStore(store, (s) => s.notificationPanelData.notifications);
+  const visibleNotifications = useMemo(
+    () => notifications?.filter((n) => n.id !== 'LYRICS_FIND_FAILED'),
+    [notifications]
+  );
   return (
-    <div className="volo-shell">
+    <div className={`volo-shell ${view === 'player' ? 'tape-shell' : 'library-shell'}`}>
       <header className="volo-titlebar">
-        <span className="volo-wordmark">
-          volo<span>随心听。</span>
-        </span>
+        <span className="volo-wordmark">volo.</span>
+        <nav className="titlebar-page-keys" aria-label="主导航">
+          <button className={libraryActive ? 'active' : ''} onClick={() => setView('library')}>
+            <Icon name="library_music" />
+            音乐库
+          </button>
+          <button className={!libraryActive ? 'active' : ''} onClick={showPlayer}>
+            <Icon name="headphones" />
+            正在播放
+          </button>
+        </nav>
         <div className="titlebar-actions">
+          <Key label="设置" icon="settings" onClick={() => setSettingsOpen(true)} />
           <button
-            className="plain-button account-trigger"
+            className="deck-key account-trigger"
+            aria-label={user.profile?.nickname || '登录网易云'}
+            title={user.profile?.nickname || '登录网易云'}
             onClick={() =>
               user.isLoggedIn || user.savedAccounts.length
                 ? setAccountOpen(true)
@@ -894,218 +558,236 @@ export default function VoloPlayer() {
             }
           >
             <Icon name="account_circle" />
-            {user.loading ? '连接中…' : user.profile?.nickname || '登录网易云'}
-          </button>
-          <button className="icon-button" aria-label="设置" onClick={() => setSettingsOpen(true)}>
-            <Icon name="settings" />
           </button>
           <WindowControlsContainer />
         </div>
       </header>
-      <main className="volo-workspace">
-        <CassetteDeck />
-        <section className="volo-library" aria-label="音乐库">
-          <div className="library-toolbar">
-            <nav className="source-tabs" aria-label="音乐库分类">
-              {(
-                [
-                  ['favorites', 'favorite_border', '喜欢'],
-                  ['recommend', 'auto_awesome', '推荐'],
-                  ['local', 'folder_open', '本地']
-                ] as const
-              ).map(([key, icon, label]) => (
-                <button
-                  key={key}
-                  className={tab === key ? 'active' : ''}
-                  onClick={() => {
-                    setTab(key);
-                    if (key !== 'favorites') setSource(key === 'local' ? 'local' : 'netease');
-                    setKeyword('');
-                    setTerm('');
-                  }}
-                  aria-current={tab === key ? 'page' : undefined}
-                >
-                  <Icon name={icon} />
-                  {label}
-                </button>
-              ))}
-            </nav>
-            <div className="library-search">
-              <Icon name="search" />
-              <input
-                ref={searchRef}
-                aria-label="搜索音乐"
-                placeholder="搜索一首歌，或一位歌手"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                onKeyDown={(e) => e.stopPropagation()}
-              />
-              {keyword && (
+      <aside className="paper-sidebar" aria-label="音乐库导航">
+        <button className="paper-logo" onClick={() => { setHome(true); setTab('local'); setView('library'); setKeyword(''); setTerm(''); }}>volo.</button>
+        <p className="paper-tagline">一处安静听音乐的地方</p>
+        <nav><button className={libraryActive && home && tab === 'local' ? 'active' : ''} onClick={() => { setView('library'); setHome(true); setTab('local'); setKeyword(''); setTerm(''); }}>最近在听</button>{([['local', '全部歌曲'], ['favorites', '喜欢的音乐'], ['recommend', '每日推荐']] as const).map(([key,label]) => <button key={key} className={libraryActive && tab === key && !(home && key === 'local') ? 'active' : ''} onClick={() => { setView('library'); setHome(false); setTab(key); setSource(key === 'local' ? 'local' : 'netease'); setKeyword(''); setTerm(''); }}>{label}<span>{key === tab && libraryActive ? String(count).padStart(2,'0') : ''}</span></button>)}<button onClick={showPlayer}>正在播放<Icon name="arrow_outward" /></button></nav>
+        <div className="paper-side-bottom"><p>世界很大，<br/>先听完这首歌。</p><button type="button" onClick={openSearch}><Icon name="search" />搜索</button><small>MADE FOR THE MOMENT</small></div>
+      </aside>
+      {view === 'player' ? (
+        <Suspense
+          fallback={
+            <div className="tape-page-loading" role="status">
+              正在打开播放页…
+            </div>
+          }
+        >
+          <TapePlayerPage onClose={() => { setView('library'); requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.now-playing-track')?.focus({preventScroll:true})); }} />
+        </Suspense>
+      ) : (
+        <main className="volo-workspace"><div className="paper-topline"><span>YOUR PERSONAL SOUNDTRACK</span><span>慢一点，也没关系。　✳</span></div>
+          {home && tab === 'local' && !term && <PaperRecent version={recentVersion} onPlay={(id) => { void controls.playSong(id, true); }} /> }
+          <section className="volo-library" aria-label="音乐库">
+            <div className="library-toolbar">
+              <nav className="source-tabs" aria-label="音乐库分类">
+                {(
+                  [
+                    ['favorites', 'favorite_border', '喜欢'],
+                    ['recommend', 'auto_awesome', '推荐'],
+                    ['local', 'folder_open', '本地']
+                  ] as const
+                ).map(([key, icon, label]) => (
+                  <button
+                    key={key}
+                    className={tab === key ? 'active' : ''}
+                    onClick={() => {
+                      setTab(key);
+                      if (key !== 'favorites') setSource(key === 'local' ? 'local' : 'netease');
+                      setKeyword('');
+                      setTerm('');
+                    }}
+                    aria-current={tab === key ? 'page' : undefined}
+                  >
+                    <Icon name={icon} />
+                    {label}
+                  </button>
+                ))}
+              </nav>
+              <div className="library-search">
+                <Icon name="search" />
+                <input
+                  ref={searchRef}
+                  aria-label="搜索音乐"
+                  placeholder="搜索一首歌，或一位歌手"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  onKeyDown={(e) => e.stopPropagation()}
+                />
+                {keyword && (
+                  <button
+                    className="icon-button"
+                    aria-label="清除搜索"
+                    onClick={() => {
+                      setKeyword('');
+                      setTerm('');
+                    }}
+                  >
+                    <Icon name="close" />
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="library-heading">
+              <div>
+                <h2>{tab === "local" && !term ? "全部歌曲" : title}</h2>
+                <p>
+                  {loading ? '正在加载…' : `${count} 首音乐`}
+                  {tab === 'recommend' && !term ? ' · 为这一天留一点好声音' : ''}
+                </p>
+              </div>
+              <div className="library-actions">
+                {(!!keyword || tab === 'favorites') && (
+                  <select
+                    aria-label="音乐来源"
+                    value={source}
+                    onChange={(e) => setSource(e.target.value as Source)}
+                  >
+                    <option value="netease">网易云</option>
+                    <option value="local">本地</option>
+                  </select>
+                )}
+                {tab === 'local' && !keyword && (
+                  <select
+                    aria-label="排序"
+                    value={sort}
+                    onChange={(e) => setSort(e.target.value as SongSortTypes)}
+                  >
+                    <option value="aToZ">名称 A–Z</option>
+                    <option value="zToA">名称 Z–A</option>
+                    <option value="addedOrder">最近添加</option>
+                  </select>
+                )}
+                {tab === 'local' && (
+                  <button
+                    className="plain-button"
+                    disabled={adding}
+                    onClick={() => void addFolder()}
+                  >
+                    <Icon name="add" />
+                    {adding ? '正在添加…' : '添加目录'}
+                  </button>
+                )}
                 <button
                   className="icon-button"
-                  aria-label="清除搜索"
-                  onClick={() => {
-                    setKeyword('');
-                    setTerm('');
-                  }}
-                >
-                  <Icon name="close" />
-                </button>
-              )}
-            </div>
-          </div>
-          <div className="library-heading">
-            <div>
-              <h2>{title}</h2>
-              <p>
-                {loading ? '正在加载…' : `${count} 首音乐`}
-                {tab === 'recommend' && !term ? ' · 为这一天留一点好声音' : ''}
-              </p>
-            </div>
-            <div className="library-actions">
-              {(!!keyword || tab === 'favorites') && (
-                <select
-                  aria-label="音乐来源"
-                  value={source}
-                  onChange={(e) => setSource(e.target.value as Source)}
-                >
-                  <option value="netease">网易云</option>
-                  <option value="local">本地</option>
-                </select>
-              )}
-              {tab === 'local' && !keyword && (
-                <select
-                  aria-label="排序"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as SongSortTypes)}
-                >
-                  <option value="aToZ">名称 A–Z</option>
-                  <option value="zToA">名称 Z–A</option>
-                  <option value="addedOrder">最近添加</option>
-                </select>
-              )}
-              {tab === 'local' && (
-                <button className="plain-button" disabled={adding} onClick={() => void addFolder()}>
-                  <Icon name="add" />
-                  {adding ? '正在添加…' : '添加目录'}
-                </button>
-              )}
-              <button
-                className="icon-button"
-                aria-label="刷新音乐"
-                onClick={() => void queryClient.invalidateQueries({ queryKey: ['volo'] })}
-              >
-                <Icon name="refresh" />
-              </button>
-              <button
-                className="plain-button accent"
-                disabled={!count}
-                onClick={async () => {
-                  if (localIndexed) {
-                    controls.createQueue(ids, 'songs', false, undefined, true);
-                  } else if (songs[0]) play(songs[0]);
-                }}
-              >
-                <Icon name="play_arrow" />
-                播放全部
-              </button>
-            </div>
-          </div>
-          <div className="track-head">
-            <span>#</span>
-            <span>歌曲 / 歌手</span>
-            <span className="album-column">专辑</span>
-            <span>时长</span>
-            <span />
-          </div>
-          <div className="library-list">
-            {queryError ? (
-              <div className="library-empty">
-                <Icon name="wifi_off" />
-                <h3>暂时无法加载</h3>
-                <p>{String(queryError)}</p>
-                <button
-                  className="plain-button"
+                  aria-label="刷新音乐"
                   onClick={() => void queryClient.invalidateQueries({ queryKey: ['volo'] })}
                 >
-                  重试
+                  <Icon name="refresh" />
+                </button>
+                <button
+                  className="plain-button accent"
+                  disabled={!count}
+                  onClick={async () => {
+                    if (localIndexed) {
+                      controls.createQueue(ids, 'songs', false, undefined, true);
+                    } else if (songs[0]) play(songs[0]);
+                  }}
+                >
+                  <Icon name="play_arrow" />
+                  播放全部
                 </button>
               </div>
-            ) : count ? (
-              <Virtuoso
-                key={`${tab}-${source}-${term}-${sort}-${user.activeUserId}`}
-                totalCount={count}
-                fixedItemHeight={58}
-                increaseViewportBy={116}
-                itemContent={(index) =>
-                  localIndexed ? (
-                    <LocalRow ids={ids} index={index} onPlay={play} />
-                  ) : (
-                    <SongRow song={songs[index]} index={index} onPlay={play} />
-                  )
-                }
-                endReached={() => {
-                  if (
-                    term &&
-                    !localMode &&
-                    onlineSearch.hasNextPage &&
-                    !onlineSearch.isFetchingNextPage
-                  )
-                    void onlineSearch.fetchNextPage();
-                }}
-              />
-            ) : (
-              <div className="library-empty">
-                <Icon
-                  name={
-                    loading ? 'hourglass_empty' : tab === 'local' ? 'library_music' : 'headphones'
-                  }
-                />
-                <h3>
-                  {loading
-                    ? '正在找到你的音乐'
-                    : !term && tab === 'favorites' && !localMode && !user.isLoggedIn
-                      ? '把喜欢的音乐带过来'
-                      : term
-                        ? '没有找到这首音乐'
-                        : '这里，留给你的好音乐'}
-                </h3>
-                <p>
-                  {!term && tab === 'favorites' && !localMode && !user.isLoggedIn
-                    ? '登录网易云，听你收藏的每一首。也可以直接播放本地音乐。'
-                    : tab === 'local'
-                      ? '添加音乐目录，开始你的私人音乐库。'
-                      : '试试另一首歌，或换一个来源。'}
-                </p>
-                {!loading && !term && tab === 'favorites' && !localMode && !user.isLoggedIn && (
-                  <button className="plain-button accent" onClick={() => setLoginOpen(true)}>
-                    登录网易云
-                  </button>
-                )}
-                {!loading && tab === 'local' && (
+            </div>
+            <div className="track-head">
+              <span>#</span>
+              <span>歌曲 / 歌手</span>
+              <span className="album-column">专辑</span>
+              <span>时长</span>
+              <span />
+            </div>
+            <div className="library-list">
+              {queryError ? (
+                <div className="library-empty">
+                  <Icon name="wifi_off" />
+                  <h3>暂时无法加载</h3>
+                  <p>{String(queryError)}</p>
                   <button
-                    className="plain-button accent"
-                    onClick={() => void addFolder()}
-                    disabled={adding}
+                    className="plain-button"
+                    onClick={() => void queryClient.invalidateQueries({ queryKey: ['volo'] })}
                   >
-                    添加音乐目录
+                    重试
                   </button>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
-      <footer className="volo-footer">
-        <span>
-          <i /> VOLO · MUSIC FIRST
-        </span>
-        <span>喜欢的歌，值得认真听。</span>
-        <span>{count ? `${count} TRACKS` : 'PRESS PLAY'}</span>
-      </footer>
-      {(!!message || !!notifications?.length) && (
+                </div>
+              ) : count ? (
+                <Virtuoso
+                  key={listKey}
+                  ref={libraryRef}
+                  restoreStateFrom={
+                    librarySnapshot.current?.key === listKey
+                      ? librarySnapshot.current.state
+                      : undefined
+                  }
+                  totalCount={count}
+                  fixedItemHeight={76}
+                  increaseViewportBy={152}
+                  itemContent={(index) =>
+                    localIndexed ? (
+                      <LocalRow ids={ids} index={index} onPlay={play} />
+                    ) : (
+                      <SongRow song={songs[index]} index={index} onPlay={play} />
+                    )
+                  }
+                  endReached={() => {
+                    if (
+                      term &&
+                      !localMode &&
+                      onlineSearch.hasNextPage &&
+                      !onlineSearch.isFetchingNextPage
+                    )
+                      void onlineSearch.fetchNextPage();
+                  }}
+                />
+              ) : (
+                <div className="library-empty">
+                  <Icon
+                    name={
+                      loading ? 'hourglass_empty' : tab === 'local' ? 'library_music' : 'headphones'
+                    }
+                  />
+                  <h3>
+                    {loading
+                      ? '正在找到你的音乐'
+                      : !term && tab === 'favorites' && !localMode && !user.isLoggedIn
+                        ? '把喜欢的音乐带过来'
+                        : term
+                          ? '没有找到这首音乐'
+                          : '这里，留给你的好音乐'}
+                  </h3>
+                  <p>
+                    {!term && tab === 'favorites' && !localMode && !user.isLoggedIn
+                      ? '登录网易云，听你收藏的每一首。也可以直接播放本地音乐。'
+                      : tab === 'local'
+                        ? '添加音乐目录，开始你的私人音乐库。'
+                        : '试试另一首歌，或换一个来源。'}
+                  </p>
+                  {!loading && !term && tab === 'favorites' && !localMode && !user.isLoggedIn && (
+                    <button className="plain-button accent" onClick={() => setLoginOpen(true)}>
+                      登录网易云
+                    </button>
+                  )}
+                  {!loading && tab === 'local' && (
+                    <button
+                      className="plain-button accent"
+                      onClick={() => void addFolder()}
+                      disabled={adding}
+                    >
+                      添加音乐目录
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+          <NowPlayingBar onOpen={showPlayer} />
+        </main>
+      )}
+      {(!!message || !!visibleNotifications?.length) && (
         <div className="volo-toast" role="status">
-          <span>{message || notifications.at(-1)?.content}</span>
+          <span>{message || visibleNotifications.at(-1)?.content}</span>
           <button
             className="icon-button"
             aria-label="关闭提示"
